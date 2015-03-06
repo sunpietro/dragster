@@ -1,0 +1,65 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    max-width: 60rem;
+    margin: auto;
+    font: 100%/1.4 Arial, sans-serif;
+    text-align: center;
+}
+
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+      user-select: none;
+  -khtml-user-drag: element;
+  -webkit-user-drag: element;
+}
+
+.dragster-region {
+    display: inline-block;
+    outline: 1px solid blue;
+    padding: 1rem;
+    width: 45%;
+    vertical-align: top;
+}
+
+.dragster-region + .dragster-region {
+    margin-left: 5%;
+    outline: 1px solid red;
+}
+
+.dragster-draggable {
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.dragster-draggable + .dragster-draggable {
+    margin-top: 1rem;
+}
+
+.dragster-draggable.is-dragging {
+    cursor: move;
+}
+
+.dragster-block {
+    opacity: 1;
+    background: #eee;
+    padding: .5rem;
+    transition: opacity .2s cubic-bezier(0, 1, 0, 1);
+}
+
+.dragster-draggable.is-dragging .dragster-block {
+    opacity: 0.75;
+}
+
+.dragster-drop-placeholder {
+    height: 2rem;
+    margin: .5rem 0;
+    border: 1px dashed #000;
+}

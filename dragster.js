@@ -2,12 +2,12 @@
     window.DD = function (params) {
         var CLASS_DRAGGING = 'is-dragging',
             CLASS_DRAGOVER = 'is-drag-over',
-            CLASS_DRAGGABLE = 'sp-draggable',
-            CLASS_REGION = 'sp-drag-region',
-            CLASS_PLACEHOLDER = 'sp-drop-placeholder',
+            CLASS_DRAGGABLE = 'dragster-draggable',
+            CLASS_REGION = 'dragster-drag-region',
+            CLASS_PLACEHOLDER = 'dragster-drop-placeholder',
             finalParams = {
-                elementSelector: '.sp-block',
-                regionSelector: '.sp-region'
+                elementSelector: '.dragster-block',
+                regionSelector: '.dragster-region'
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -100,6 +100,9 @@
             dragenter: function (event) {
                 var target = getElement(event.target, isDraggableCallback);
 
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+
                 if (elementUnderDragged !== target) {
                     if (elementUnderDragged) {
                         elementUnderDragged.classList.remove(CLASS_DRAGOVER);
@@ -117,6 +120,9 @@
                     placeholder,
                     placeholderPosition,
                     newElement;
+
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
 
                 if (event.target.classList && event.target.classList.contains(CLASS_PLACEHOLDER)) {
                     target = placeholder = event.target;
@@ -182,7 +188,7 @@
 
                 if (target) {
                     targetRegion = target.getBoundingClientRect();
-                    maxDistance = targetRegion.height / 3;
+                    maxDistance = targetRegion.height / 2;
 
                     if (target.classList.contains(CLASS_DRAGGING)) { return; }
 
