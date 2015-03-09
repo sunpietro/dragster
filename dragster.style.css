@@ -26,6 +26,7 @@ body {
     padding: 1rem;
     width: 45%;
     vertical-align: top;
+    min-height: 3rem;
 }
 
 .dragster-region + .dragster-region {
@@ -47,15 +48,25 @@ body {
     cursor: move;
 }
 
+.dragster-temp {
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    cursor: move;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.5);
+    top: 0;
+    left: 0;
+}
+
 .dragster-block {
-    opacity: 1;
     background: #eee;
     padding: .5rem;
-    transition: opacity .2s cubic-bezier(0, 1, 0, 1);
+    opacity: 1;
 }
 
 .dragster-draggable.is-dragging .dragster-block {
-    opacity: 0.75;
+    opacity: 0.5;
 }
 
 .dragster-drop-placeholder {
