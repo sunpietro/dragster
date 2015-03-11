@@ -6,6 +6,7 @@
             CLASS_REGION = 'dragster-drag-region',
             CLASS_PLACEHOLDER = 'dragster-drop-placeholder',
             CLASS_TEMP_ELEMENT = 'dragster-temp',
+            CLASS_HIDDEN = 'dragster-is-hidden',
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region'
@@ -34,15 +35,29 @@
             createPlaceholder,
             removeElements;
 
+        // merge the object with default config with an object with params provided by a developer
         for (key in params) {
             if (params.hasOwnProperty(key)) {
                 finalParams[key] = params[key];
             }
         }
 
+        // convert NodeList type objects into Array objects
         draggableElements = Array.prototype.slice.call(document.querySelectorAll(finalParams.elementSelector));
         regions = Array.prototype.slice.call(document.querySelectorAll(finalParams.regionSelector));
 
+        /*
+         * Check whether a given element meets the requirements from the callback.
+         * The callback should always return Boolean value - true or false.
+         * The function allows to find a correct element within the DOM.
+         * If the element doesn't meet the requirements then the function tests its parent node.
+         *
+         * @private
+         * @method getElement
+         * @param element {Element} DOM element
+         * @param callback {Function} testing function
+         * @return {Element}
+         */
         getElement = function (element, callback) {
             var parent = element.parentNode;
 
@@ -52,6 +67,13 @@
             return callback(parent) ? parent : getElement(parent, callback);
         };
 
+        /*
+         * Removes all elements defined by a selector from the DOM
+         *
+         * @private
+         * @method removeElements
+         * @param element {Element} DOM element
+         */
         removeElements = function (selector) {
             var elements = Array.prototype.slice.call(document.querySelectorAll(selector));
 
@@ -60,6 +82,13 @@
             });
         };
 
+        /*
+         * Creates a wrapper for a draggable element
+         *
+         * @private
+         * @method createElementWrapper
+         * @return {Element} DOM element
+         */
         createElementWrapper = function () {
             var wrapper = document.createElement('div');
 
@@ -69,6 +98,13 @@
             return wrapper;
         };
 
+        /*
+         * Creates a placeholder where dragged element can be dropped into
+         *
+         * @private
+         * @method createPlaceholder
+         * @return {Element} DOM element
+         */
         createPlaceholder = function () {
             var placeholder = document.createElement('div');
 
@@ -77,22 +113,84 @@
             return placeholder;
         };
 
+        /*
+         * Creates a copy of dragged element that follows the cursor movement
+         *
+         * @private
+         * @method createShadowElement
+         * @return {Element} DOM element
+         */
         createShadowElement = function () {
             var element = document.createElement('div');
 
             element.classList.add(CLASS_TEMP_ELEMENT);
+            element.classList.add(CLASS_HIDDEN);
             document.body.appendChild(element);
 
             return element;
         };
 
+        /*
+         * Insert an element after a selected element
+         *
+         * @private
+         * @method insertAfter
+         * @param elementTarget {Element} dragged element
+         * @param elementAfter {Element} dragged element will be placed after this element
+         */
         insertAfter = function (elementTarget, elementAfter) { elementTarget.parentNode.insertBefore(elementAfter, elementTarget.nextSibling); };
+
+        /*
+         * Insert an element before a selected element
+         *
+         * @private
+         * @method insertBefore
+         * @param elementTarget {Element} dragged element
+         * @param elementBefore {Element} dragged element will be placed before this element
+         */
         insertBefore = function (elementTarget, elementBefore) { elementTarget.parentNode.insertBefore(elementBefore, elementTarget); };
+
+        /*
+         * Test whether an element is a region where drag'n'drop interactions are possible
+         *
+         * @private
+         * @method isRegionCallback
+         * @param element {Element}
+         * @return {Boolean}
+         */
         isRegionCallback = function (element) { return (element.classList && element.classList.contains(CLASS_REGION)); };
+
+        /*
+         * Test whether an element is a draggable element
+         *
+         * @private
+         * @method isDraggableCallback
+         * @param element {Element}
+         * @return {Boolean}
+         */
         isDraggableCallback = function (element) { return (element.classList && element.classList.contains(CLASS_DRAGGABLE)); };
+
+        /*
+         * Test whether an element is a placeholder where a user can drop a dragged element
+         *
+         * @private
+         * @method isPlaceholderCallback
+         * @param element {Element}
+         * @return {Boolean}
+         */
         isPlaceholderCallback = function (element) { return (element.classList && element.classList.contains(CLASS_PLACEHOLDER)); };
 
+
         regionEventHandlers = {
+            /*
+             * `mousedown` or `touchstart` event handler.
+             * When user starts dragging an element the function adds a listener to either `mousemove` or `touchmove`
+             * events. Creates a shadow element that follows a movement of the cursor.
+             *
+             * @private
+             * @method regionEventHandlers.mousedown
+             * @param event {Object} event object
+             */
             mousedown: function (event) {
                 event.preventDefault();
 
@@ -118,6 +216,18 @@
 
                 draggedElement.classList.add(CLASS_DRAGGING);
             },
+            /*
+             * `mousemove` or `touchmove` event handler.
+             * When user is moving an element the function checks whether the element is above any other draggable element.
+             * In case when it is above any draggable element, the function adds a temporary placeholder before or after the given element,
+             * so a user is able to drop a dragged element onto the placeholder.
+             * In case when in a region there's no draggable element it just adds a placeholder to the region.
+             * Updates a position of shadow element following the cursor.
+             *
+             * @private
+             * @method regionEventHandlers.mousemove
+             * @param event {Object} event object
+             */
             mousemove: function (event) {
                 event.preventDefault();
 
@@ -130,6 +240,7 @@
 
                 shadowElement.style.top = (eventObject.clientY + 25) + 'px';
                 shadowElement.style.left = (eventObject.clientX - (shadowElementRegion.width / 2)) + 'px';
+                shadowElement.classList.remove(CLASS_HIDDEN);
 
                 if (dropTarget && dropTarget !== draggedElement) {
                     placeholder = createPlaceholder();
@@ -150,6 +261,18 @@
                     unknownTarget.appendChild(placeholder);
                 }
             },
+            /*
+             * `mouseup` or `touchend` event handler.
+             * When user is dropping an element, the function checks whether the element is above any other draggable element.
+             * In case when it is above any draggable element, the function places the dragged element before of after the element below.
+             * Removes a listener to either `mousemove` or `touchmove` event.
+             * Removes placeholders.
+             * Removes a shadow element.
+             *
+             * @private
+             * @method regionEventHandlers.mouseup
+             * @param event {Object} event object
+             */
             mouseup: function (event) {
                 var dropTarget = document.querySelector('.' + CLASS_PLACEHOLDER),
                     dropDraggableTarget,
@@ -190,6 +313,7 @@
             }
         };
 
+        // wrap draggable elements with a wrapper
         draggableElements.forEach(function (draggableElement) {
             var wrapper = createElementWrapper(),
                 draggableParent = draggableElement.parentNode;
@@ -199,6 +323,7 @@
             wrapper.appendChild(draggableElement);
         });
 
+        // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
         regions.forEach(function (region) {
             region.classList.add(CLASS_REGION);
             region.addEventListener('mousedown', regionEventHandlers.mousedown, false);

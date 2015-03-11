@@ -74,3 +74,7 @@ body {
     margin: .5rem 0;
     border: 1px dashed #000;
 }
+
+.dragster-is-hidden {
+    display: none;
+}
