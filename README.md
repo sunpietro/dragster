@@ -4,6 +4,8 @@ By implementing this library a user is able to drag'n'drop elements on user-defi
 It works both on desktop (using mouse interface) and mobile devices (using touch interface).
 It's only 3kB minified.
 
+See the library in action at the demo page: [Dragster.js demo page](http://sunpietro.github.io/dragster/)
+
 ## The sample usage
 You can start using it preparing following HTML code:
 
