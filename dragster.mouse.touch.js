@@ -268,7 +268,9 @@
                         placeholder.setAttribute(placeholderAttrName, 'bottom');
                         dropTarget.appendChild(placeholder);
                     }
-                } else if (unknownTarget.classList.contains(CLASS_REGION) && unknownTarget.querySelectorAll('.' + CLASS_DRAGGABLE).length === 0) {
+                } else if (unknownTarget.classList.contains(CLASS_REGION) &&
+                    unknownTarget.querySelectorAll('.' + CLASS_DRAGGABLE).length === 0 &&
+                    unknownTarget.querySelectorAll('.' + CLASS_PLACEHOLDER).length === 0) {
                     placeholder = createPlaceholder();
                     unknownTarget.appendChild(placeholder);
                 }
