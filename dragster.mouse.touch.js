@@ -45,7 +45,9 @@
             createElementWrapper,
             createShadowElement,
             createPlaceholder,
-            removeElements;
+            hideShadowElementTimeout,
+            removeElements,
+            cleanWorkspace;
 
         // merge the object with default config with an object with params provided by a developer
         for (key in params) {
@@ -92,6 +94,25 @@
             elements.forEach(function (element) {
                 element.parentNode.removeChild(element);
             });
+        };
+
+        /*
+         * Removes all visible placeholders, shadow elements
+         * and removes `mousemove` event listeners from regions
+         *
+         * @private
+         * @method cleanWorkspace
+         * @param element {Element} DOM element
+         * @param eventName {String} name of the event to stop listening to
+         */
+        cleanWorkspace = function (element, eventName) {
+            regions.forEach(function (region) {
+                region.removeEventListener(eventName, regionEventHandlers.mousemove);
+            });
+
+            element.classList.remove(CLASS_DRAGGING);
+            removeElements('.' + CLASS_PLACEHOLDER);
+            removeElements('.' + CLASS_TEMP_ELEMENT);
         };
 
         /*
@@ -250,6 +271,8 @@
                     maxDistance,
                     placeholder;
 
+                clearTimeout(hideShadowElementTimeout);
+
                 shadowElement.style.top = (eventObject.clientY + 25) + 'px';
                 shadowElement.style.left = (eventObject.clientX - (shadowElementRegion.width / 2)) + 'px';
                 shadowElement.classList.remove(CLASS_HIDDEN);
@@ -294,13 +317,15 @@
                     unlistenToEventName = event.type === 'touchstart' ? 'touchmove' : 'mousemove',
                     dropTemp;
 
+                hideShadowElementTimeout = setTimeout(function () {
+                    cleanWorkspace(draggedElement, unlistenToEventName);
+                }, 200);
+
                 if (!draggedElement || !dropTarget) {
                     return false;
                 }
 
-                draggedElement.classList.remove(CLASS_DRAGGING);
                 dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
-
                 dropDraggableTarget = dropDraggableTarget || dropTarget;
 
                 if (draggedElement !== dropDraggableTarget) {
@@ -318,12 +343,7 @@
                     draggedElement.parentNode.removeChild(draggedElement);
                 }
 
-                regions.forEach(function (region) {
-                    region.removeEventListener(unlistenToEventName, regionEventHandlers.mousemove);
-                });
-
-                removeElements('.' + CLASS_PLACEHOLDER);
-                removeElements('.' + CLASS_TEMP_ELEMENT);
+                cleanWorkspace(draggedElement, unlistenToEventName);
             }
         };
 
