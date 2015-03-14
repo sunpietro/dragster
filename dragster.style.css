@@ -67,9 +67,11 @@ body {
     top: 0;
     left: 0;
     cursor: move;
-    box-shadow: 0 0 0 2px rgba(0,0,0,.5);
-    top: 0;
-    left: 0;
+    opacity: 1;
+    box-shadow: 0 0 5px 0 rgba(0,0,0,.5);
+    transition:
+        opacity .3s ease-in-out,
+        box-shadow .3s ease-in-out;
 }
 
 .dragster-block {
@@ -88,6 +90,7 @@ body {
     border: 1px dashed #000;
 }
 
-.dragster-is-hidden {
-    display: none;
+.dragster-temp.dragster-is-hidden {
+    opacity: 0;
+    box-shadow: none;
 }
