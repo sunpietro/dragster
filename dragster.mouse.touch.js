@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2015-03-11T08:00Z
+ * Date: 2015-03-21T18:50Z
  */
 (function (window, document) {
     window.DD = function (params) {
@@ -110,7 +110,12 @@
                 region.removeEventListener(eventName, regionEventHandlers.mousemove);
             });
 
-            element.classList.remove(CLASS_DRAGGING);
+            document.body.removeEventListener(eventName, regionEventHandlers.mousemove);
+
+            if (element) {
+                element.classList.remove(CLASS_DRAGGING);
+            }
+
             removeElements('.' + CLASS_PLACEHOLDER);
             removeElements('.' + CLASS_TEMP_ELEMENT);
         };
@@ -234,6 +239,8 @@
                     region.addEventListener(listenToEventName, regionEventHandlers.mousemove);
                 });
 
+                document.body.addEventListener(listenToEventName, regionEventHandlers.mousemove);
+
                 draggedElement = getElement(event.target, isDraggableCallback);
 
                 if (!draggedElement) {
@@ -296,6 +303,8 @@
                     unknownTarget.querySelectorAll('.' + CLASS_PLACEHOLDER).length === 0) {
                     placeholder = createPlaceholder();
                     unknownTarget.appendChild(placeholder);
+                } else {
+                    removeElements('.' + CLASS_PLACEHOLDER);
                 }
             },
             /*
@@ -321,8 +330,14 @@
                     cleanWorkspace(draggedElement, unlistenToEventName);
                 }, 200);
 
-                if (!draggedElement || !dropTarget) {
+                if (!draggedElement) {
                     return false;
+                }
+
+                if (!dropTarget) {
+                    cleanWorkspace(draggedElement, unlistenToEventName);
+
+                    return false
                 }
 
                 dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
@@ -356,6 +371,9 @@
             draggableParent.removeChild(draggableElement);
             wrapper.appendChild(draggableElement);
         });
+
+        document.body.addEventListener('mouseup', regionEventHandlers.mouseup, false);
+        document.body.addEventListener('touchend', regionEventHandlers.mouseup, false);
 
         // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
         regions.forEach(function (region) {
