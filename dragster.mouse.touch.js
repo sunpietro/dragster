@@ -1,5 +1,5 @@
 /*!
- * Dragster - drag'n'drop library v1.0.0
+ * Dragster - drag'n'drop library v1.0.2
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015 Piotr Nalepa
@@ -231,6 +231,11 @@
              */
             mousedown: function (event) {
                 event.preventDefault();
+
+                //detect right and block
+                if (event.which === 3) {
+                    return false;
+                }
 
                 var targetRegion,
                     listenToEventName = event.type === 'touchstart' ? 'touchmove' : 'mousemove';
