@@ -1,5 +1,5 @@
 /*!
- * Dragster - drag'n'drop library v1.0.2
+ * Dragster - drag'n'drop library v1.0.3
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2015-03-21T18:50Z
+ * Date: 2015-03-26T19:50Z
  */
 (function (window, document) {
     window.DD = function (params) {
@@ -277,6 +277,10 @@
                 event.preventDefault();
 
                 var eventObject = event.changedTouches ? event.changedTouches[0] : event,
+                    pageXOffset = eventObject.view ? eventObject.view.pageXOffset : 0,
+                    pageYOffset = eventObject.view ? eventObject.view.pageYOffset : 0,
+                    elementPositionY = eventObject.clientY + pageYOffset,
+                    elementPositionX = eventObject.clientX + pageXOffset,
                     unknownTarget = document.elementFromPoint(eventObject.clientX, eventObject.clientY),
                     dropTarget = getElement(unknownTarget, isDraggableCallback),
                     dropTargetRegion,
@@ -285,8 +289,8 @@
 
                 clearTimeout(hideShadowElementTimeout);
 
-                shadowElement.style.top = (eventObject.clientY + 25) + 'px';
-                shadowElement.style.left = (eventObject.clientX - (shadowElementRegion.width / 2)) + 'px';
+                shadowElement.style.top = (elementPositionY + 25) + 'px';
+                shadowElement.style.left = (elementPositionX - (shadowElementRegion.width / 2)) + 'px';
                 shadowElement.classList.remove(CLASS_HIDDEN);
 
                 if (dropTarget && dropTarget !== draggedElement) {
@@ -294,11 +298,11 @@
                     dropTargetRegion = dropTarget.getBoundingClientRect();
                     maxDistance = dropTargetRegion.height / 2;
 
-                    if ((eventObject.clientY - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
+                    if ((elementPositionY - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
                         removeElements('.' + CLASS_PLACEHOLDER);
                         placeholder.setAttribute(placeholderAttrName, 'top');
                         insertBefore(dropTarget.firstChild, placeholder);
-                    } else if ((dropTargetRegion.bottom - eventObject.clientY) < maxDistance && !visiblePlaceholder.bottom) {
+                    } else if ((dropTargetRegion.bottom - elementPositionY) < maxDistance && !visiblePlaceholder.bottom) {
                         removeElements('.' + CLASS_PLACEHOLDER);
                         placeholder.setAttribute(placeholderAttrName, 'bottom');
                         dropTarget.appendChild(placeholder);
@@ -308,7 +312,7 @@
                     unknownTarget.querySelectorAll('.' + CLASS_PLACEHOLDER).length === 0) {
                     placeholder = createPlaceholder();
                     unknownTarget.appendChild(placeholder);
-                } else {
+                } else if (!unknownTarget.classList.contains(CLASS_REGION)) {
                     removeElements('.' + CLASS_PLACEHOLDER);
                 }
             },
@@ -342,7 +346,7 @@
                 if (!dropTarget) {
                     cleanWorkspace(draggedElement, unlistenToEventName);
 
-                    return false
+                    return false;
                 }
 
                 dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
