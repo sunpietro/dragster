@@ -6,6 +6,13 @@ It's only 3kB minified.
 
 See the library in action at the demo page: [Dragster.js demo page](http://sunpietro.github.io/dragster/)
 
+## How to install?
+You can install this library in two different ways:
+* Clone this repository on Github,
+* Install using bower (frontend dependencies manager) with following command:
+
+    `bower install dragsterjs`
+
 ## The sample usage
 You can start using it preparing following HTML code:
 
