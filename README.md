@@ -1,4 +1,7 @@
 # dragster.js
+
+![Dragster.js demo](https://imgflip.com/gif/jqng6)
+
 Tiny vanilla JS library that enables drag'n'drop interactions to a user of your website.
 By implementing this library a user is able to drag'n'drop elements on user-defined drop regions.
 It works both on desktop (using mouse interface) and mobile devices (using touch interface).
