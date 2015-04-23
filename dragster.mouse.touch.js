@@ -1,5 +1,5 @@
 /*!
- * Dragster - drag'n'drop library v1.0.3
+ * Dragster - drag'n'drop library v1.0.4
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2015-03-26T19:50Z
+ * Date: 2015-04-23T22:44Z
  */
 (function (window, document) {
     window.DD = function (params) {
@@ -18,10 +18,13 @@
             CLASS_REGION = 'dragster-drag-region',
             CLASS_PLACEHOLDER = 'dragster-drop-placeholder',
             CLASS_TEMP_ELEMENT = 'dragster-temp',
+            CLASS_TEMP_CONTAINER = 'dragster-temp-container',
             CLASS_HIDDEN = 'dragster-is-hidden',
+            CLASS_REPLACABLE = 'dragster-replacable',
             finalParams = {
                 elementSelector: '.dragster-block',
-                regionSelector: '.dragster-region'
+                regionSelector: '.dragster-region',
+                replaceElements: false
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -34,6 +37,7 @@
             getElement,
             shadowElement,
             shadowElementRegion,
+            tempContainer,
             draggedElement,
             draggableElements,
             regionEventHandlers,
@@ -47,7 +51,8 @@
             createPlaceholder,
             hideShadowElementTimeout,
             removeElements,
-            cleanWorkspace;
+            cleanWorkspace,
+            cleanReplacables;
 
         // merge the object with default config with an object with params provided by a developer
         for (key in params) {
@@ -59,6 +64,15 @@
         // convert NodeList type objects into Array objects
         draggableElements = Array.prototype.slice.call(document.querySelectorAll(finalParams.elementSelector));
         regions = Array.prototype.slice.call(document.querySelectorAll(finalParams.regionSelector));
+
+        if (finalParams.replaceElements) {
+            tempContainer = document.createElement('div');
+
+            tempContainer.classList.add(CLASS_HIDDEN);
+            tempContainer.classList.add(CLASS_TEMP_CONTAINER);
+
+            document.body.appendChild(tempContainer);
+        }
 
         /*
          * Check whether a given element meets the requirements from the callback.
@@ -89,7 +103,7 @@
          * @param element {Element} DOM element
          */
         removeElements = function (selector) {
-            var elements = Array.prototype.slice.call(document.querySelectorAll(selector));
+            var elements = Array.prototype.slice.call(document.getElementsByClassName(selector));
 
             elements.forEach(function (element) {
                 element.parentNode.removeChild(element);
@@ -116,8 +130,14 @@
                 element.classList.remove(CLASS_DRAGGING);
             }
 
-            removeElements('.' + CLASS_PLACEHOLDER);
-            removeElements('.' + CLASS_TEMP_ELEMENT);
+            removeElements(CLASS_PLACEHOLDER);
+            removeElements(CLASS_TEMP_ELEMENT);
+        };
+
+        cleanReplacables = function () {
+            (Array.prototype.slice.call(document.getElementsByClassName(CLASS_REPLACABLE))).forEach(function (elem) {
+                elem.classList.remove(CLASS_REPLACABLE);
+            });
         };
 
         /*
@@ -298,22 +318,32 @@
                     dropTargetRegion = dropTarget.getBoundingClientRect();
                     maxDistance = dropTargetRegion.height / 2;
 
-                    if ((elementPositionY - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
-                        removeElements('.' + CLASS_PLACEHOLDER);
-                        placeholder.setAttribute(placeholderAttrName, 'top');
-                        insertBefore(dropTarget.firstChild, placeholder);
-                    } else if ((dropTargetRegion.bottom - elementPositionY) < maxDistance && !visiblePlaceholder.bottom) {
-                        removeElements('.' + CLASS_PLACEHOLDER);
-                        placeholder.setAttribute(placeholderAttrName, 'bottom');
-                        dropTarget.appendChild(placeholder);
+                    cleanReplacables();
+
+                    if (!finalParams.replaceElements) {
+                        if ((elementPositionY - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
+                            removeElements(CLASS_PLACEHOLDER);
+                            placeholder.setAttribute(placeholderAttrName, 'top');
+                            insertBefore(dropTarget.firstChild, placeholder);
+                        } else if ((dropTargetRegion.bottom - elementPositionY) < maxDistance && !visiblePlaceholder.bottom) {
+                            removeElements(CLASS_PLACEHOLDER);
+                            placeholder.setAttribute(placeholderAttrName, 'bottom');
+                            dropTarget.appendChild(placeholder);
+                        }
+                    } else {
+                        dropTarget.classList.add(CLASS_REPLACABLE);
                     }
                 } else if (unknownTarget.classList.contains(CLASS_REGION) &&
-                    unknownTarget.querySelectorAll('.' + CLASS_DRAGGABLE).length === 0 &&
-                    unknownTarget.querySelectorAll('.' + CLASS_PLACEHOLDER).length === 0) {
+                    unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length === 0 &&
+                    unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
                     placeholder = createPlaceholder();
                     unknownTarget.appendChild(placeholder);
                 } else if (!unknownTarget.classList.contains(CLASS_REGION)) {
-                    removeElements('.' + CLASS_PLACEHOLDER);
+                    if (!finalParams.replaceElements) {
+                        removeElements(CLASS_PLACEHOLDER);
+                    } else {
+                        cleanReplacables();
+                    }
                 }
             },
             /*
@@ -329,7 +359,8 @@
              * @param event {Object} event object
              */
             mouseup: function (event) {
-                var dropTarget = document.querySelector('.' + CLASS_PLACEHOLDER),
+                var findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER,
+                    dropTarget = document.getElementsByClassName(findByClass)[0],
                     dropDraggableTarget,
                     placeholderPosition,
                     unlistenToEventName = event.type === 'touchstart' ? 'touchmove' : 'mousemove',
@@ -339,11 +370,9 @@
                     cleanWorkspace(draggedElement, unlistenToEventName);
                 }, 200);
 
-                if (!draggedElement) {
-                    return false;
-                }
+                cleanReplacables();
 
-                if (!dropTarget) {
+                if (!draggedElement || !dropTarget) {
                     cleanWorkspace(draggedElement, unlistenToEventName);
 
                     return false;
@@ -353,18 +382,27 @@
                 dropDraggableTarget = dropDraggableTarget || dropTarget;
 
                 if (draggedElement !== dropDraggableTarget) {
-                    dropTemp = createElementWrapper();
-                    dropTemp.innerHTML = draggedElement.innerHTML;
-                    placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+                    if (!finalParams.replaceElements) {
+                        dropTemp = createElementWrapper();
+                        dropTemp.innerHTML = draggedElement.innerHTML;
+                        placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
 
-                    if (placeholderPosition === 'top') {
-                        insertBefore(dropDraggableTarget, dropTemp);
+                        if (placeholderPosition === 'top') {
+                            insertBefore(dropDraggableTarget, dropTemp);
+                        } else {
+                            insertAfter(dropDraggableTarget, dropTemp);
+                        }
+                        draggedElement.parentNode.removeChild(draggedElement);
                     } else {
-                        insertAfter(dropDraggableTarget, dropTemp);
+                        dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
+                        dropTemp.innerHTML = draggedElement.innerHTML;
+
+                        draggedElement.innerHTML = dropDraggableTarget.innerHTML;
+                        dropDraggableTarget.innerHTML = dropTemp.innerHTML;
+                        dropTemp.innerHTML = '';
                     }
 
                     dropDraggableTarget.classList.remove(CLASS_DRAGOVER);
-                    draggedElement.parentNode.removeChild(draggedElement);
                 }
 
                 cleanWorkspace(draggedElement, unlistenToEventName);
