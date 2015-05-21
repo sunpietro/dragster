@@ -28,7 +28,7 @@ You can start using it preparing following HTML code:
 Then add following JS code:
 
 ```javascript
-new DD({
+var dragster = new window.Dragster({
     elementSelector: '.dragster-block',
     regionSelector: '.dragster-region'
 });
@@ -36,10 +36,41 @@ new DD({
 
 And start having fun with dragging elements on the website.
 
-## Properties
-Currently, developer should provide 2 required params:
-### elementSelector (required)
-It is a CSS selector to find all the elements on the page that should be draggable.
-### regionSelector (required)
-It is a CSS selector to find all the regions where elements can be dragged onto and where all the drag'n'drop functionality works as expected.
+## Replace elements instead of moving them
+If you want to replace elements instead of moving them between regions you can initialize Dragster.js library with an option `replaceElements: true`:
 
+```javascript
+var dragster = new window.Dragster({
+    elementSelector: '.dragster-block',
+    regionSelector: '.dragster-region',
+    replaceElements: true
+});
+```
+
+## Update draggable elements on demand
+If you have an app where elements are added dynamically, you can update the draggable elements list on demand:
+
+```javascript
+var dragster = new window.Dragster({
+    elementSelector: '.dragster-block',
+    regionSelector: '.dragster-region'
+});
+
+dragster.update();
+```
+
+
+## Properties
+List of properties:
+### elementSelector (required) - {String}
+It is a CSS selector to find all the elements on the page that should be draggable.
+### regionSelector (required) - {String}
+It is a CSS selector to find all the regions where elements can be dragged onto and where all the drag'n'drop functionality works as expected
+### replaceElements - {Boolean}
+It is indicator whether elements should be moved in regions or whether they should replace each other when user drops element.
+It takes either `true` or `false` value.
+
+## Methods
+List of methods ready to use by any webdeveloper:
+### update
+Updates a reference to draggable elements. For example, when user adds a new element to any of droppable regions then running `update` method makes a new element draggable as well.

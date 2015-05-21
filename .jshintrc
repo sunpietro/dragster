@@ -47,5 +47,8 @@
     "latedef":      true,
     "camelcase":    true,
     "indent":       4,
-    "undef":        true
+    "undef":        true,
+    "globals": {
+        "Dragster": true
+    }
 }

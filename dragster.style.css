@@ -1,5 +1,5 @@
 /*!
- * Dragster - drag'n'drop library v1.0.4
+ * Dragster - drag'n'drop library v1.0.5
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2015-04-23T22:44Z
+ * Date: 2015-05-21T19:00Z
  */
 * {
     box-sizing: border-box;
@@ -79,7 +79,7 @@ body {
     opacity: 1;
 }
 
-.dragster-draggable.is-dragging .dragster-block {
+.dragster-draggable.is-dragging > * {
     opacity: 0.5;
 }
 
