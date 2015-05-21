@@ -1,5 +1,5 @@
 /*!
- * Dragster - drag'n'drop library v1.0.4
+ * Dragster - drag'n'drop library v1.0.5
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015 Piotr Nalepa
@@ -8,10 +8,10 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2015-04-23T22:44Z
+ * Date: 2015-05-21T19:00Z
  */
 (function (window, document) {
-    window.DD = function (params) {
+    window.Dragster = function (params) {
         var CLASS_DRAGGING = 'is-dragging',
             CLASS_DRAGOVER = 'is-drag-over',
             CLASS_DRAGGABLE = 'dragster-draggable',
@@ -52,7 +52,9 @@
             hideShadowElementTimeout,
             removeElements,
             cleanWorkspace,
-            cleanReplacables;
+            cleanReplacables,
+            findDraggableElements,
+            wrapDraggableElements;
 
         // merge the object with default config with an object with params provided by a developer
         for (key in params) {
@@ -61,8 +63,28 @@
             }
         }
 
-        // convert NodeList type objects into Array objects
-        draggableElements = Array.prototype.slice.call(document.querySelectorAll(finalParams.elementSelector));
+        findDraggableElements = function () {
+            // convert NodeList type objects into Array objects
+            return Array.prototype.slice.call(document.querySelectorAll(finalParams.elementSelector));
+        };
+
+        wrapDraggableElements = function (elements) {
+            // wrap draggable elements with a wrapper
+            elements.forEach(function (draggableElement) {
+                var wrapper = createElementWrapper(),
+                    draggableParent = draggableElement.parentNode;
+
+                if (draggableParent.classList.contains(CLASS_DRAGGABLE)) {
+                    return;
+                }
+
+                draggableParent.insertBefore(wrapper, draggableElement);
+                draggableParent.removeChild(draggableElement);
+                wrapper.appendChild(draggableElement);
+            });
+        };
+
+        draggableElements = findDraggableElements();
         regions = Array.prototype.slice.call(document.querySelectorAll(finalParams.regionSelector));
 
         if (finalParams.replaceElements) {
@@ -336,8 +358,22 @@
                 } else if (unknownTarget.classList.contains(CLASS_REGION) &&
                     unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length === 0 &&
                     unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
+
                     placeholder = createPlaceholder();
                     unknownTarget.appendChild(placeholder);
+
+                } else if (unknownTarget.classList.contains(CLASS_REGION) &&
+                    unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0 &&
+                    unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
+
+                    var elementsInRegion = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE);
+
+                    placeholder = createPlaceholder();
+
+                    placeholder.setAttribute(placeholderAttrName, 'bottom');
+                    removeElements(CLASS_PLACEHOLDER);
+                    elementsInRegion[elementsInRegion.length - 1].appendChild(placeholder);
+
                 } else if (!unknownTarget.classList.contains(CLASS_REGION)) {
                     if (!finalParams.replaceElements) {
                         removeElements(CLASS_PLACEHOLDER);
@@ -409,15 +445,7 @@
             }
         };
 
-        // wrap draggable elements with a wrapper
-        draggableElements.forEach(function (draggableElement) {
-            var wrapper = createElementWrapper(),
-                draggableParent = draggableElement.parentNode;
-
-            draggableParent.insertBefore(wrapper, draggableElement);
-            draggableParent.removeChild(draggableElement);
-            wrapper.appendChild(draggableElement);
-        });
+        wrapDraggableElements(draggableElements);
 
         document.body.addEventListener('mouseup', regionEventHandlers.mouseup, false);
         document.body.addEventListener('touchend', regionEventHandlers.mouseup, false);
@@ -431,5 +459,11 @@
             region.addEventListener('touchstart', regionEventHandlers.mousedown, false);
             region.addEventListener('touchend', regionEventHandlers.mouseup, false);
         });
+
+        return {
+            update: function () {
+                wrapDraggableElements(findDraggableElements());
+            }
+        };
     };
 })(window, window.document);
