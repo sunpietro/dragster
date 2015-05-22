@@ -420,7 +420,6 @@
                 if (draggedElement !== dropDraggableTarget) {
                     if (!finalParams.replaceElements) {
                         dropTemp = createElementWrapper();
-                        dropTemp.innerHTML = draggedElement.innerHTML;
                         placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
 
                         if (placeholderPosition === 'top') {
@@ -428,7 +427,8 @@
                         } else {
                             insertAfter(dropDraggableTarget, dropTemp);
                         }
-                        draggedElement.parentNode.removeChild(draggedElement);
+
+                        dropTemp.appendChild(draggedElement.firstChild);
                     } else {
                         dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
                         dropTemp.innerHTML = draggedElement.innerHTML;
