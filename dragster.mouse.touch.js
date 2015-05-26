@@ -218,7 +218,11 @@
          * @param elementTarget {Element} dragged element
          * @param elementAfter {Element} dragged element will be placed after this element
          */
-        insertAfter = function (elementTarget, elementAfter) { elementTarget.parentNode.insertBefore(elementAfter, elementTarget.nextSibling); };
+        insertAfter = function (elementTarget, elementAfter) {
+            if (elementTarget && elementTarget.parentNode) {
+                elementTarget.parentNode.insertBefore(elementAfter, elementTarget.nextSibling);
+            }
+        };
 
         /*
          * Insert an element before a selected element
@@ -228,7 +232,11 @@
          * @param elementTarget {Element} dragged element
          * @param elementBefore {Element} dragged element will be placed before this element
          */
-        insertBefore = function (elementTarget, elementBefore) { elementTarget.parentNode.insertBefore(elementBefore, elementTarget); };
+        insertBefore = function (elementTarget, elementBefore) {
+            if (elementTarget && elementTarget.parentNode) {
+                elementTarget.parentNode.insertBefore(elementBefore, elementTarget);
+            }
+        };
 
         /*
          * Test whether an element is a region where drag'n'drop interactions are possible
@@ -426,6 +434,10 @@
                             insertBefore(dropDraggableTarget, dropTemp);
                         } else {
                             insertAfter(dropDraggableTarget, dropTemp);
+                        }
+
+                        if (draggedElement.firstChild) {
+                            dropTemp.appendChild(draggedElement.firstChild);
                         }
 
                         dropTemp.appendChild(draggedElement.firstChild);
