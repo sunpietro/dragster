@@ -47,6 +47,17 @@ var dragster = new window.Dragster({
 });
 ```
 
+## Don't update droppable regions' height
+If you don't want to update regions height value when dragging and dropping element on a region you can initialize Dragster.js library with an option `updateRegionsHeight: false`:
+
+```javascript
+var dragster = new window.Dragster({
+    elementSelector: '.dragster-block',
+    regionSelector: '.dragster-region',
+    updateRegionsHeight: false
+});
+```
+
 ## Update draggable elements on demand
 If you have an app where elements are added dynamically, you can update the draggable elements list on demand:
 
@@ -59,16 +70,21 @@ var dragster = new window.Dragster({
 dragster.update();
 ```
 
-
 ## Properties
 List of properties:
 ### elementSelector (required) - {String}
-It is a CSS selector to find all the elements on the page that should be draggable.
+It is a CSS selector to find all the elements on the page that should be draggable. Default value: `'.dragster-block'`
 ### regionSelector (required) - {String}
-It is a CSS selector to find all the regions where elements can be dragged onto and where all the drag'n'drop functionality works as expected
+It is a CSS selector to find all the regions where elements can be dragged onto and where all the drag'n'drop functionality works as expected.
+Default value: `'.dragster-region'`
 ### replaceElements - {Boolean}
 It is indicator whether elements should be moved in regions or whether they should replace each other when user drops element.
-It takes either `true` or `false` value.
+It takes either `true` or `false` value. Default value: `false`.
+### updateRegionsHeight - {Boolean}
+It is indicator whether regions should update their height according to the number of elements visible in the region.
+It takes either `true` or `false` value. Default value: `true`.
+### minimumRegionHeight - {Integer}
+Tell the dragster to not to resize the regions below provided value. Default value: `50`.
 
 ## Methods
 List of methods ready to use by any webdeveloper:

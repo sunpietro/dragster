@@ -1,5 +1,5 @@
 /*!
- * Dragster - drag'n'drop library v1.0.5
+ * Dragster - drag'n'drop library v1.1.0
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2015-05-21T19:00Z
+ * Date: 2015-05-26T19:00Z
  */
 (function (window, document) {
     window.Dragster = function (params) {
@@ -24,7 +24,9 @@
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
-                replaceElements: false
+                replaceElements: false,
+                updateRegionsHeight: true,
+                minimumRegionHeight: 50
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -54,7 +56,8 @@
             cleanWorkspace,
             cleanReplacables,
             findDraggableElements,
-            wrapDraggableElements;
+            wrapDraggableElements,
+            updateRegionsHeight;
 
         // merge the object with default config with an object with params provided by a developer
         for (key in params) {
@@ -63,11 +66,26 @@
             }
         }
 
+        /*
+         * Find all draggable elements on the page
+         *
+         * @private
+         * @method findDraggableElements
+         * @return {Array}
+         */
         findDraggableElements = function () {
             // convert NodeList type objects into Array objects
             return Array.prototype.slice.call(document.querySelectorAll(finalParams.elementSelector));
         };
 
+        /*
+         * Wrap all elements from the `elements` param with a draggable wrapper
+         *
+         * @private
+         * @method findDraggableElements
+         * @param elements {Array}
+         * @return {Array}
+         */
         wrapDraggableElements = function (elements) {
             // wrap draggable elements with a wrapper
             elements.forEach(function (draggableElement) {
@@ -133,7 +151,7 @@
         };
 
         /*
-         * Removes all visible placeholders, shadow elements
+         * Removes all visible placeholders, shadow elements, empty draggable nodes
          * and removes `mousemove` event listeners from regions
          *
          * @private
@@ -152,10 +170,24 @@
                 element.classList.remove(CLASS_DRAGGING);
             }
 
+            // remove all empty draggable nodes
+            Array.prototype.slice.call(document.getElementsByClassName(CLASS_DRAGGABLE)).forEach(function (dragEl) {
+                if (!dragEl.firstChild) {
+                    dragEl.parentNode.removeChild(dragEl);
+                }
+            });
+
             removeElements(CLASS_PLACEHOLDER);
             removeElements(CLASS_TEMP_ELEMENT);
+            updateRegionsHeight();
         };
 
+        /*
+         * Removes replacable classname from all replacable elements
+         *
+         * @private
+         * @method cleanReplacables
+         */
         cleanReplacables = function () {
             (Array.prototype.slice.call(document.getElementsByClassName(CLASS_REPLACABLE))).forEach(function (elem) {
                 elem.classList.remove(CLASS_REPLACABLE);
@@ -268,6 +300,34 @@
          */
         isPlaceholderCallback = function (element) { return (element.classList && element.classList.contains(CLASS_PLACEHOLDER)); };
 
+        /*
+         * Update the height of the regions dynamically
+         *
+         * @private
+         * @method isPlaceholderCallback
+         * @param element {Element}
+         * @return {Boolean}
+         */
+        updateRegionsHeight = function () {
+            if (finalParams.updateRegionsHeight) {
+                var regions = Array.prototype.slice.call(document.getElementsByClassName(CLASS_REGION));
+
+                regions.forEach(function (region) {
+                    var elements = Array.prototype.slice.call(region.querySelectorAll(finalParams.elementSelector)),
+                        regionHeight = finalParams.minimumRegionHeight;
+
+                    if (elements.length) {
+                        elements.forEach(function (element) {
+                            var styles = window.getComputedStyle(element);
+
+                            regionHeight += element.offsetHeight + parseInt(styles.marginTop, 10) + parseInt(styles.marginBottom, 10);
+                        });
+                    }
+
+                    region.style.height = regionHeight + 'px';
+                });
+            }
+        };
 
         regionEventHandlers = {
             /*
@@ -389,6 +449,8 @@
                         cleanReplacables();
                     }
                 }
+
+                updateRegionsHeight();
             },
             /*
              * `mouseup` or `touchend` event handler.
@@ -439,8 +501,6 @@
                         if (draggedElement.firstChild) {
                             dropTemp.appendChild(draggedElement.firstChild);
                         }
-
-                        dropTemp.appendChild(draggedElement.firstChild);
                     } else {
                         dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
                         dropTemp.innerHTML = draggedElement.innerHTML;
@@ -475,6 +535,7 @@
         return {
             update: function () {
                 wrapDraggableElements(findDraggableElements());
+                updateRegionsHeight();
             }
         };
     };
