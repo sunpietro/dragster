@@ -21,12 +21,19 @@
             CLASS_TEMP_CONTAINER = 'dragster-temp-container',
             CLASS_HIDDEN = 'dragster-is-hidden',
             CLASS_REPLACABLE = 'dragster-replacable',
+            dummyCallback = function () {},
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
                 replaceElements: false,
                 updateRegionsHeight: true,
-                minimumRegionHeight: 50
+                minimumRegionHeight: 50,
+                onBeforeDragStart: dummyCallback,
+                onAfterDragStart: dummyCallback,
+                onBeforeDragMove: dummyCallback,
+                onAfterDragMove: dummyCallback,
+                onBeforeDragEnd: dummyCallback,
+                onAfterDragEnd: dummyCallback
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -342,6 +349,10 @@
             mousedown: function (event) {
                 event.preventDefault();
 
+                if (finalParams.onBeforeDragStart() === false) {
+                    return false;
+                }
+
                 //detect right and block
                 if (event.which === 3) {
                     return false;
@@ -370,6 +381,8 @@
                 shadowElementRegion = shadowElement.getBoundingClientRect();
 
                 draggedElement.classList.add(CLASS_DRAGGING);
+
+                finalParams.onAfterDragStart();
             },
             /*
              * `mousemove` or `touchmove` event handler.
@@ -385,6 +398,10 @@
              */
             mousemove: function (event) {
                 event.preventDefault();
+
+                if (finalParams.onBeforeDragMove() === false) {
+                    return false;
+                }
 
                 var eventObject = event.changedTouches ? event.changedTouches[0] : event,
                     pageXOffset = eventObject.view ? eventObject.view.pageXOffset : 0,
@@ -451,6 +468,8 @@
                 }
 
                 updateRegionsHeight();
+
+                finalParams.onAfterDragMove();
             },
             /*
              * `mouseup` or `touchend` event handler.
@@ -465,6 +484,10 @@
              * @param event {Object} event object
              */
             mouseup: function (event) {
+                if (finalParams.onBeforeDragEnd() === false) {
+                    return false;
+                }
+
                 var findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER,
                     dropTarget = document.getElementsByClassName(findByClass)[0],
                     dropDraggableTarget,
@@ -514,6 +537,8 @@
                 }
 
                 cleanWorkspace(draggedElement, unlistenToEventName);
+
+                finalParams.onAfterDragEnd();
             }
         };
 

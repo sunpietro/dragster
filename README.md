@@ -86,7 +86,24 @@ It takes either `true` or `false` value. Default value: `true`.
 ### minimumRegionHeight - {Integer}
 Tell the dragster to not to resize the regions below provided value. Default value: `50`.
 
+## Properties - callbacks
+These properties allow a developer to control the behaviour of dragster.js library using callbacks.
+When callback returns `false` value then the dragging action is cancelled.
+Be careful with these callbacks as it might cause unexpected behaviour of dragged elements.
+### onBeforeDragStart - {Function}
+Before drag start callback. Can prevent from dragging an element.
+### onAfterDragStart - {Function}
+After drag start callback.
+### onBeforeDragMove - {Function}
+Before drag move callback. Can prevent from dropping an element.
+### onAfterDragMove - {Function}
+After drag move callback.
+### onBeforeDragEnd - {Function}
+Before drag end callback. Can prevent from dropping an element.
+### onAfterDragEnd - {Function}
+After drag end callback.
+
 ## Methods
-List of methods ready to use by any webdeveloper:
+List of methods ready to be used by any webdeveloper:
 ### update
 Updates a reference to draggable elements. For example, when user adds a new element to any of droppable regions then running `update` method makes a new element draggable as well.
