@@ -347,16 +347,11 @@
              * @param event {Object} event object
              */
             mousedown: function (event) {
+                if (finalParams.onBeforeDragStart() === false || event.which === 3 /* detect right click */) {
+                    return false;
+                }
+
                 event.preventDefault();
-
-                if (finalParams.onBeforeDragStart() === false) {
-                    return false;
-                }
-
-                //detect right and block
-                if (event.which === 3) {
-                    return false;
-                }
 
                 var targetRegion,
                     listenToEventName = event.type === 'touchstart' ? 'touchmove' : 'mousemove';
@@ -397,11 +392,11 @@
              * @param event {Object} event object
              */
             mousemove: function (event) {
-                event.preventDefault();
-
                 if (finalParams.onBeforeDragMove() === false) {
                     return false;
                 }
+
+                event.preventDefault();
 
                 var eventObject = event.changedTouches ? event.changedTouches[0] : event,
                     pageXOffset = eventObject.view ? eventObject.view.pageXOffset : 0,
