@@ -33,12 +33,14 @@
             POS_BOTTOM = 'bottom',
             UNIT = 'px',
             DIV = 'div',
+            FALSE = false,
+            TRUE = true,
             dummyCallback = function () {},
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
-                replaceElements: false,
-                updateRegionsHeight: true,
+                replaceElements: FALSE,
+                updateRegionsHeight: TRUE,
                 minimumRegionHeight: 50,
                 onBeforeDragStart: dummyCallback,
                 onAfterDragStart: dummyCallback,
@@ -50,9 +52,27 @@
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
             visiblePlaceholder = {
-                top: false,
-                bottom: false
+                top: FALSE,
+                bottom: FALSE
             },
+            defaultDragsterEventInfo = {
+                drag: {
+                    node: {} // {Element} object
+                },
+                drop: {
+                    node: {} // {Element} object
+                },
+                shadow: {
+                    node: {}, // {Element} object
+                    top: 0, // {Integer}
+                    left: 0 // {Integer}
+                },
+                placeholder: {
+                    node: {},
+                    position: ''  // {String} 'top' || 'bottom'
+                }
+            },
+            dragsterEventInfo,
             key,
             regions,
             getElement,
@@ -112,7 +132,7 @@
                     draggableParent = draggableElement.parentNode;
 
                 if (draggableParent.classList.contains(CLASS_DRAGGABLE)) {
-                    return;
+                    return FALSE;
                 }
 
                 draggableParent.insertBefore(wrapper, draggableElement);
@@ -223,7 +243,7 @@
         createElementWrapper = function () {
             var wrapper = document.createElement(DIV);
 
-            wrapper.setAttribute(draggableAttrName, true);
+            wrapper.setAttribute(draggableAttrName, TRUE);
             wrapper.classList.add(CLASS_DRAGGABLE);
 
             return wrapper;
@@ -359,8 +379,10 @@
              * @param event {Object} event object
              */
             mousedown: function (event) {
-                if (finalParams.onBeforeDragStart(event) === false || event.which === 3 /* detect right click */) {
-                    return false;
+                event.dragster = dragsterEventInfo;
+
+                if (finalParams.onBeforeDragStart(event) === FALSE || event.which === 3 /* detect right click */) {
+                    return FALSE;
                 }
 
                 event.preventDefault();
@@ -377,7 +399,7 @@
                 draggedElement = getElement(event.target, isDraggableCallback);
 
                 if (!draggedElement) {
-                    return false;
+                    return FALSE;
                 }
 
                 targetRegion = draggedElement.getBoundingClientRect();
@@ -388,6 +410,12 @@
                 shadowElementRegion = shadowElement.getBoundingClientRect();
 
                 draggedElement.classList.add(CLASS_DRAGGING);
+
+                dragsterEventInfo = defaultDragsterEventInfo;
+                dragsterEventInfo.drag.node = draggedElement;
+                dragsterEventInfo.shadow.node = shadowElement;
+
+                event.dragster = dragsterEventInfo;
 
                 finalParams.onAfterDragStart(event);
             },
@@ -404,8 +432,10 @@
              * @param event {Object} event object
              */
             mousemove: function (event) {
-                if (finalParams.onBeforeDragMove(event) === false) {
-                    return false;
+                event.dragster = dragsterEventInfo;
+
+                if (finalParams.onBeforeDragMove(event) === FALSE) {
+                    return FALSE;
                 }
 
                 event.preventDefault();
@@ -417,18 +447,22 @@
                     elementPositionX = eventObject.clientX + pageXOffset,
                     unknownTarget = document.elementFromPoint(eventObject.clientX, eventObject.clientY),
                     dropTarget = getElement(unknownTarget, isDraggableCallback),
+                    top = elementPositionY + 25,
+                    left = elementPositionX - (shadowElementRegion.width / 2),
+                    placeholder = createPlaceholder(),
                     dropTargetRegion,
-                    maxDistance,
-                    placeholder;
+                    maxDistance;
 
                 clearTimeout(hideShadowElementTimeout);
 
-                shadowElement.style.top = (elementPositionY + 25) + UNIT;
-                shadowElement.style.left = (elementPositionX - (shadowElementRegion.width / 2)) + UNIT;
+                shadowElement.style.top = top + UNIT;
+                shadowElement.style.left = left + UNIT;
                 shadowElement.classList.remove(CLASS_HIDDEN);
 
+                dragsterEventInfo.shadow.top = top;
+                dragsterEventInfo.shadow.left = left;
+
                 if (dropTarget && dropTarget !== draggedElement) {
-                    placeholder = createPlaceholder();
                     dropTargetRegion = dropTarget.getBoundingClientRect();
                     maxDistance = dropTargetRegion.height / 2;
 
@@ -439,31 +473,46 @@
                             removeElements(CLASS_PLACEHOLDER);
                             placeholder.setAttribute(placeholderAttrName, POS_TOP);
                             insertBefore(dropTarget.firstChild, placeholder);
+
+                            dragsterEventInfo.placeholder.position = POS_TOP;
                         } else if ((dropTargetRegion.bottom - elementPositionY) < maxDistance && !visiblePlaceholder.bottom) {
                             removeElements(CLASS_PLACEHOLDER);
                             placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
                             dropTarget.appendChild(placeholder);
+
+                            dragsterEventInfo.placeholder.position = POS_BOTTOM;
                         }
                     } else {
                         dropTarget.classList.add(CLASS_REPLACABLE);
                     }
+
+                    dragsterEventInfo.placeholder.node = placeholder;
+                    dragsterEventInfo.drop.node = dropTarget;
                 } else if (unknownTarget.classList.contains(CLASS_REGION) &&
                     unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length === 0 &&
                     unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
 
-                    placeholder = createPlaceholder();
                     unknownTarget.appendChild(placeholder);
+
+                    dragsterEventInfo.placeholder.position = POS_BOTTOM;
+                    dragsterEventInfo.placeholder.node = placeholder;
+                    dragsterEventInfo.drop.node = unknownTarget;
                 } else if (unknownTarget.classList.contains(CLASS_REGION) &&
                     unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0 &&
                     unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
 
                     var elementsInRegion = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE);
 
-                    placeholder = createPlaceholder();
+                    dropTarget = elementsInRegion[elementsInRegion.length - 1];
 
                     placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
                     removeElements(CLASS_PLACEHOLDER);
-                    elementsInRegion[elementsInRegion.length - 1].appendChild(placeholder);
+                    dropTarget.appendChild(placeholder);
+
+                    dragsterEventInfo.placeholder.position = POS_BOTTOM;
+                    dragsterEventInfo.placeholder.node = placeholder;
+                    dragsterEventInfo.drop.node = dropTarget;
+
                 } else if (!unknownTarget.classList.contains(CLASS_REGION)) {
                     if (!finalParams.replaceElements) {
                         removeElements(CLASS_PLACEHOLDER);
@@ -473,7 +522,6 @@
                 }
 
                 updateRegionsHeight();
-
                 finalParams.onAfterDragMove(event);
             },
             /*
@@ -489,8 +537,10 @@
              * @param event {Object} event object
              */
             mouseup: function (event) {
-                if (finalParams.onBeforeDragEnd(event) === false) {
-                    return false;
+                event.dragster = dragsterEventInfo;
+
+                if (finalParams.onBeforeDragEnd(event) === FALSE) {
+                    return FALSE;
                 }
 
                 var findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER,
@@ -509,7 +559,7 @@
                 if (!draggedElement || !dropTarget) {
                     cleanWorkspace(draggedElement, unlistenToEventName);
 
-                    return false;
+                    return FALSE;
                 }
 
                 dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
@@ -549,17 +599,17 @@
 
         wrapDraggableElements(draggableElements);
 
-        document.body.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, false);
-        document.body.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, false);
+        document.body.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
+        document.body.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
 
         // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
         regions.forEach(function (region) {
             region.classList.add(CLASS_REGION);
-            region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, false);
-            region.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, false);
+            region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
+            region.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
 
-            region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, false);
-            region.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, false);
+            region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
+            region.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
         });
 
         return {
