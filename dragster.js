@@ -1,4 +1,4 @@
-/*!
+/*@preserve
  * Dragster - drag'n'drop library v1.1.2
  * https://github.com/sunpietro/dragster
  *
