@@ -1,0 +1,24 @@
+{
+  "name": "dragsterjs",
+  "version": "1.2.0",
+  "description": "Tiny vanilla JS plugin that enables drag'n'drop interactions to a user of your website",
+  "main": "dragster.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunpietro/dragster.git"
+  },
+  "keywords": [
+    "javascript",
+    "drag",
+    "drop"
+  ],
+  "author": "Piotr Nalepa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sunpietro/dragster/issues"
+  },
+  "homepage": "https://github.com/sunpietro/dragster"
+}

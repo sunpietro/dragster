@@ -10,9 +10,17 @@ See the library in action at the demo page: [Dragster.js demo page](http://sunpi
 ## How to install?
 You can install this library in two different ways:
 * Clone this repository on Github,
+* Install using npm (Node.js dependencies manager) with following command:
+
+    ```
+    npm install dragsterjs
+    ```
+
 * Install using bower (frontend dependencies manager) with following command:
 
-    `bower install dragsterjs`
+    ```
+    bower install dragsterjs
+    ```
 
 ## The sample usage
 You can start using it preparing following HTML code:
@@ -88,6 +96,7 @@ Tell the dragster to not to resize the regions below provided value. Default val
 
 ## Properties - callbacks
 These properties allow a developer to control the behaviour of dragster.js library using callbacks.
+All the callbacks takes **one param - the event object**, provided by Dragster.js library.
 When callback returns `false` value then the dragging action is cancelled.
 Be careful with these callbacks as it might cause unexpected behaviour of dragged elements.
 ### onBeforeDragStart - {Function}
