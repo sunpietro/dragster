@@ -4,7 +4,7 @@
   "description": "Tiny vanilla JS plugin that enables drag'n'drop interactions to a user of your website",
   "main": "dragster.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "minify": "uglifyjs dragster.js -m -o dragster.min.js"
   },
   "repository": {
     "type": "git",

@@ -47,7 +47,8 @@
                 onBeforeDragMove: dummyCallback,
                 onAfterDragMove: dummyCallback,
                 onBeforeDragEnd: dummyCallback,
-                onAfterDragEnd: dummyCallback
+                onAfterDragEnd: dummyCallback,
+                scrollWindowOnDrag: FALSE
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -57,19 +58,62 @@
             },
             defaultDragsterEventInfo = {
                 drag: {
-                    node: {} // {Element} object
+                    /**
+                     * Contains drag node reference
+                     *
+                     * @property node
+                     * @type {HTMLElement}
+                     */
+                    node: {}
                 },
                 drop: {
-                    node: {} // {Element} object
+                    /**
+                     * Contains drop node reference
+                     *
+                     * @property node
+                     * @type {HTMLElement}
+                     */
+                    node: {}
                 },
                 shadow: {
-                    node: {}, // {Element} object
-                    top: 0, // {Integer}
-                    left: 0 // {Integer}
+                    /**
+                     * Contains shadow element node reference
+                     *
+                     * @property node
+                     * @type {HTMLElement}
+                     */
+                    node: {},
+                    /**
+                     * Contains top position value of shadow element
+                     *
+                     * @property top
+                     * @type {Number}
+                     */
+                    top: 0,
+                    /**
+                     * Contains left position value of shadow element
+                     *
+                     * @property left
+                     * @type {Number}
+                     */
+                    left: 0
                 },
                 placeholder: {
+                    /**
+                     * Contains placeholder node reference
+                     *
+                     * @property node
+                     * @type {HTMLElement}
+                     */
                     node: {},
-                    position: ''  // {String} 'top' || 'bottom'
+                    /**
+                     * Contains position type of placeholder
+                     *
+                     * @property position
+                     * @type {String}
+                     * @example 'top' or 'bottom'
+                     */
+                    position: ''
                 }
             },
             dragsterEventInfo,
@@ -96,7 +140,11 @@
             cleanReplacables,
             findDraggableElements,
             wrapDraggableElements,
-            updateRegionsHeight;
+            updateRegionsHeight,
+            scrollWindow,
+            discoverWindowHeight,
+            bodyHeight = document.body.offsetHeight,
+            windowHeight = window.innerHeight;
 
         // merge the object with default config with an object with params provided by a developer
         for (key in params) {
@@ -114,7 +162,7 @@
          */
         findDraggableElements = function () {
             // convert NodeList type objects into Array objects
-            return Array.prototype.slice.call(document.querySelectorAll(finalParams.elementSelector));
+            return [].slice.call(document.querySelectorAll(finalParams.elementSelector));
         };
 
         /*
@@ -142,7 +190,7 @@
         };
 
         draggableElements = findDraggableElements();
-        regions = Array.prototype.slice.call(document.querySelectorAll(finalParams.regionSelector));
+        regions = [].slice.call(document.querySelectorAll(finalParams.regionSelector));
 
         if (finalParams.replaceElements) {
             tempContainer = document.createElement(DIV);
@@ -182,7 +230,7 @@
          * @param element {Element} DOM element
          */
         removeElements = function (selector) {
-            var elements = Array.prototype.slice.call(document.getElementsByClassName(selector));
+            var elements = [].slice.call(document.getElementsByClassName(selector));
 
             elements.forEach(function (element) {
                 element.parentNode.removeChild(element);
@@ -210,7 +258,7 @@
             }
 
             // remove all empty draggable nodes
-            Array.prototype.slice.call(document.getElementsByClassName(CLASS_DRAGGABLE)).forEach(function (dragEl) {
+            [].slice.call(document.getElementsByClassName(CLASS_DRAGGABLE)).forEach(function (dragEl) {
                 if (!dragEl.firstChild) {
                     dragEl.parentNode.removeChild(dragEl);
                 }
@@ -228,7 +276,7 @@
          * @method cleanReplacables
          */
         cleanReplacables = function () {
-            (Array.prototype.slice.call(document.getElementsByClassName(CLASS_REPLACABLE))).forEach(function (elem) {
+            ([].slice.call(document.getElementsByClassName(CLASS_REPLACABLE))).forEach(function (elem) {
                 elem.classList.remove(CLASS_REPLACABLE);
             });
         };
@@ -276,6 +324,9 @@
 
             element.classList.add(CLASS_TEMP_ELEMENT);
             element.classList.add(CLASS_HIDDEN);
+
+            element.style.position = 'fixed';
+
             document.body.appendChild(element);
 
             return element;
@@ -349,10 +400,10 @@
          */
         updateRegionsHeight = function () {
             if (finalParams.updateRegionsHeight) {
-                var regions = Array.prototype.slice.call(document.getElementsByClassName(CLASS_REGION));
+                var regions = [].slice.call(document.getElementsByClassName(CLASS_REGION));
 
                 regions.forEach(function (region) {
-                    var elements = Array.prototype.slice.call(region.querySelectorAll(finalParams.elementSelector)),
+                    var elements = [].slice.call(region.querySelectorAll(finalParams.elementSelector)),
                         regionHeight = finalParams.minimumRegionHeight;
 
                     if (elements.length) {
@@ -447,7 +498,7 @@
                     elementPositionX = eventObject.clientX + pageXOffset,
                     unknownTarget = document.elementFromPoint(eventObject.clientX, eventObject.clientY),
                     dropTarget = getElement(unknownTarget, isDraggableCallback),
-                    top = elementPositionY + 25,
+                    top = eventObject.clientY,
                     left = elementPositionX - (shadowElementRegion.width / 2),
                     placeholder = createPlaceholder(),
                     dropTargetRegion,
@@ -519,6 +570,10 @@
                     } else {
                         cleanReplacables();
                     }
+                }
+
+                if (finalParams.scrollWindowOnDrag) {
+                    scrollWindow(event);
                 }
 
                 updateRegionsHeight();
@@ -597,6 +652,34 @@
             }
         };
 
+        /**
+         * Scrolls window while dragging an element
+         *
+         * @method scrollWindow
+         * @private
+         * @param event {Object} event object
+         */
+        scrollWindow = function (event) {
+            var eventObject = event.changedTouches ? event.changedTouches[0] : event,
+                diffSize = 60;
+
+            if (windowHeight - eventObject.clientY < diffSize) {
+                window.scrollBy(0, 10);
+            } else if (eventObject.clientY < diffSize) {
+                window.scrollBy(0, -10);
+            }
+        };
+
+        /**
+         * Discovers window height
+         *
+         * @method discoverWindowHeight
+         * @private
+         */
+        discoverWindowHeight = function () {
+            windowHeight = window.innerHeight;
+        };
+
         wrapDraggableElements(draggableElements);
 
         document.body.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
@@ -612,10 +695,13 @@
             region.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
         });
 
+        window.addEventListener('resize', discoverWindowHeight, false);
+
         return {
             update: function () {
                 wrapDraggableElements(findDraggableElements());
                 updateRegionsHeight();
+                discoverWindowHeight();
             }
         };
     };
