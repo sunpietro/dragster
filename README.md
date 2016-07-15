@@ -91,8 +91,11 @@ It takes either `true` or `false` value. Default value: `false`.
 ### updateRegionsHeight - {Boolean}
 It is indicator whether regions should update their height according to the number of elements visible in the region.
 It takes either `true` or `false` value. Default value: `true`.
-### minimumRegionHeight - {Integer}
+### minimumRegionHeight - {Number}
 Tell the dragster to not to resize the regions below provided value. Default value: `50`.
+### scrollWindowOnDrag - {Boolean}
+Tell the dragster to scroll window while dragging an element. Default value: `false`.
+
 
 ## Properties - callbacks
 These properties allow a developer to control the behaviour of dragster.js library using callbacks.
