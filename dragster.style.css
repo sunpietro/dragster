@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.2.1
+ * Dragster - drag'n'drop library v1.3.0
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2016 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2016-07-15T20:30Z
+ * Date: 2016-10-11T20:30Z
  */
 * {
     box-sizing: border-box;
@@ -22,13 +22,6 @@ body {
     text-align: center;
 }
 
-img {
-    display: block;
-    max-width: 100%;
-    width: auto;
-    height: auto;
-}
-
 [draggable] {
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -39,18 +32,24 @@ img {
   -webkit-user-drag: element;
 }
 
+.regions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
 .dragster-region {
-    display: inline-block;
+    flex: 1 1 30%;
     outline: 1px solid blue;
     padding: 1rem;
-    width: 45%;
     vertical-align: top;
     min-height: 3rem;
     transition: height .3s cubic-bezier(.4, 0, .2, 1);
+    margin: 1rem;
 }
 
 .dragster-region + .dragster-region {
-    margin-left: 5%;
     outline: 1px solid red;
 }
 
@@ -85,6 +84,10 @@ img {
     background: #eee;
     padding: .5rem;
     opacity: 1;
+}
+
+.dragster-block svg {
+    width: 100%;
 }
 
 .dragster-draggable.is-dragging > * {

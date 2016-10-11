@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.2.1
+ * Dragster - drag'n'drop library v1.3.0
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2016 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2016-07-15T20:30Z
+ * Date: 2016-10-11T20:30Z
  */
 (function (window, document) {
     'use strict';
@@ -23,6 +23,7 @@
             CLASS_TEMP_CONTAINER = 'dragster-temp-container',
             CLASS_HIDDEN = 'dragster-is-hidden',
             CLASS_REPLACABLE = 'dragster-replacable',
+            CLASS_DRAG_ONLY = 'dragster-region--drag-only',
             EVT_TOUCHSTART = 'touchstart',
             EVT_TOUCHMOVE = 'touchmove',
             EVT_TOUCHEND = 'touchend',
@@ -39,16 +40,19 @@
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
+                dragOnlyRegionCssClass: CLASS_DRAG_ONLY,
                 replaceElements: FALSE,
                 updateRegionsHeight: TRUE,
-                minimumRegionHeight: 50,
+                minimumRegionHeight: 60,
                 onBeforeDragStart: dummyCallback,
                 onAfterDragStart: dummyCallback,
                 onBeforeDragMove: dummyCallback,
                 onAfterDragMove: dummyCallback,
                 onBeforeDragEnd: dummyCallback,
                 onAfterDragEnd: dummyCallback,
-                scrollWindowOnDrag: FALSE
+                scrollWindowOnDrag: FALSE,
+                dragOnlyRegionsEnabled: FALSE,
+                cloneElements: FALSE
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -128,7 +132,7 @@
             regionEventHandlers,
             isPlaceholderCallback,
             isDraggableCallback,
-            isRegionCallback,
+            isInDragOnlyRegionCallback,
             insertAfter,
             insertBefore,
             createElementWrapper,
@@ -143,7 +147,6 @@
             updateRegionsHeight,
             scrollWindow,
             discoverWindowHeight,
-            bodyHeight = document.body.offsetHeight,
             windowHeight = window.innerHeight;
 
         // merge the object with default config with an object with params provided by a developer
@@ -209,14 +212,18 @@
          *
          * @private
          * @method getElement
-         * @param element {Element} DOM element
+         * @param element {HTMLElement} DOM element
          * @param callback {Function} testing function
-         * @return {Element}
+         * @return {HTMLElement}
          */
         getElement = function (element, callback) {
             var parent = element.parentNode;
 
-            if (!parent || (element.classList && element.classList.contains(CLASS_REGION))) { return undefined; }
+            if (!parent ||
+                (element.classList &&
+                    element.classList.contains(CLASS_REGION) &&
+                    !element.classList.contains(CLASS_DRAG_ONLY))
+                ) { return undefined; }
             if (callback(element)) { return element; }
 
             return callback(parent) ? parent : getElement(parent, callback);
@@ -227,7 +234,7 @@
          *
          * @private
          * @method removeElements
-         * @param element {Element} DOM element
+         * @param element {HTMLElement} DOM element
          */
         removeElements = function (selector) {
             var elements = [].slice.call(document.getElementsByClassName(selector));
@@ -243,15 +250,17 @@
          *
          * @private
          * @method cleanWorkspace
-         * @param element {Element} DOM element
+         * @param element {HTMLElement} DOM element
          * @param eventName {String} name of the event to stop listening to
          */
         cleanWorkspace = function (element, eventName) {
-            regions.forEach(function (region) {
-                region.removeEventListener(eventName, regionEventHandlers.mousemove);
-            });
+            if (eventName) {
+                regions.forEach(function (region) {
+                    region.removeEventListener(eventName, regionEventHandlers.mousemove);
+                });
 
-            document.body.removeEventListener(eventName, regionEventHandlers.mousemove);
+                document.body.removeEventListener(eventName, regionEventHandlers.mousemove);
+            }
 
             if (element) {
                 element.classList.remove(CLASS_DRAGGING);
@@ -286,7 +295,7 @@
          *
          * @private
          * @method createElementWrapper
-         * @return {Element} DOM element
+         * @return {HTMLElement} DOM element
          */
         createElementWrapper = function () {
             var wrapper = document.createElement(DIV);
@@ -302,7 +311,7 @@
          *
          * @private
          * @method createPlaceholder
-         * @return {Element} DOM element
+         * @return {HTMLElement} DOM element
          */
         createPlaceholder = function () {
             var placeholder = document.createElement(DIV);
@@ -317,7 +326,7 @@
          *
          * @private
          * @method createShadowElement
-         * @return {Element} DOM element
+         * @return {HTMLElement} DOM element
          */
         createShadowElement = function () {
             var element = document.createElement(DIV);
@@ -337,8 +346,8 @@
          *
          * @private
          * @method insertAfter
-         * @param elementTarget {Element} dragged element
-         * @param elementAfter {Element} dragged element will be placed after this element
+         * @param elementTarget {HTMLElement} dragged element
+         * @param elementAfter {HTMLElement} dragged element will be placed after this element
          */
         insertAfter = function (elementTarget, elementAfter) {
             if (elementTarget && elementTarget.parentNode) {
@@ -351,8 +360,8 @@
          *
          * @private
          * @method insertBefore
-         * @param elementTarget {Element} dragged element
-         * @param elementBefore {Element} dragged element will be placed before this element
+         * @param elementTarget {HTMLElement} dragged element
+         * @param elementBefore {HTMLElement} dragged element will be placed before this element
          */
         insertBefore = function (elementTarget, elementBefore) {
             if (elementTarget && elementTarget.parentNode) {
@@ -361,21 +370,11 @@
         };
 
         /*
-         * Test whether an element is a region where drag'n'drop interactions are possible
-         *
-         * @private
-         * @method isRegionCallback
-         * @param element {Element}
-         * @return {Boolean}
-         */
-        isRegionCallback = function (element) { return (element.classList && element.classList.contains(CLASS_REGION)); };
-
-        /*
          * Test whether an element is a draggable element
          *
          * @private
          * @method isDraggableCallback
-         * @param element {Element}
+         * @param element {HTMLElement}
          * @return {Boolean}
          */
         isDraggableCallback = function (element) { return (element.classList && element.classList.contains(CLASS_DRAGGABLE)); };
@@ -385,17 +384,27 @@
          *
          * @private
          * @method isPlaceholderCallback
-         * @param element {Element}
+         * @param element {HTMLElement}
          * @return {Boolean}
          */
         isPlaceholderCallback = function (element) { return (element.classList && element.classList.contains(CLASS_PLACEHOLDER)); };
+
+        /*
+         * Test whether an element belongs to drag only region
+         *
+         * @private
+         * @method isInDragOnlyRegionCallback
+         * @param element {HTMLElement}
+         * @return {Boolean}
+         */
+        isInDragOnlyRegionCallback = function (element) { return (element.classList && element.classList.contains(finalParams.dragOnlyRegionCssClass)); }; //jshint ignore:line
 
         /*
          * Update the height of the regions dynamically
          *
          * @private
          * @method isPlaceholderCallback
-         * @param element {Element}
+         * @param element {HTMLElement}
          * @return {Boolean}
          */
         updateRegionsHeight = function () {
@@ -501,6 +510,7 @@
                     top = eventObject.clientY,
                     left = elementPositionX - (shadowElementRegion.width / 2),
                     placeholder = createPlaceholder(),
+                    isInDragOnlyRegion = !!(dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)),
                     dropTargetRegion,
                     maxDistance;
 
@@ -513,7 +523,7 @@
                 dragsterEventInfo.shadow.top = top;
                 dragsterEventInfo.shadow.left = left;
 
-                if (dropTarget && dropTarget !== draggedElement) {
+                if (dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion) {
                     dropTargetRegion = dropTarget.getBoundingClientRect();
                     maxDistance = dropTargetRegion.height / 2;
 
@@ -602,7 +612,9 @@
                     dropTarget = document.getElementsByClassName(findByClass)[0],
                     dropDraggableTarget,
                     placeholderPosition,
+                    isFromDragOnlyRegion = !!(draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback)),
                     unlistenToEventName = event.type === EVT_TOUCHSTART ? EVT_TOUCHMOVE : EVT_MOUSEMOVE,
+                    canBeCloned = finalParams.cloneElements && isFromDragOnlyRegion,
                     dropTemp;
 
                 hideShadowElementTimeout = setTimeout(function () {
@@ -621,7 +633,7 @@
                 dropDraggableTarget = dropDraggableTarget || dropTarget;
 
                 if (draggedElement !== dropDraggableTarget) {
-                    if (!finalParams.replaceElements) {
+                    if (!finalParams.replaceElements && !canBeCloned) {
                         dropTemp = createElementWrapper();
                         placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
 
@@ -634,13 +646,24 @@
                         if (draggedElement.firstChild) {
                             dropTemp.appendChild(draggedElement.firstChild);
                         }
-                    } else {
+                    } else if (finalParams.replaceElements && !canBeCloned) {
                         dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
                         dropTemp.innerHTML = draggedElement.innerHTML;
 
                         draggedElement.innerHTML = dropDraggableTarget.innerHTML;
                         dropDraggableTarget.innerHTML = dropTemp.innerHTML;
                         dropTemp.innerHTML = '';
+                    } else if (!finalParams.replaceElements && canBeCloned) {
+                        dropTemp = draggedElement.cloneNode(true);
+                        placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+
+                        if (placeholderPosition === POS_TOP) {
+                            insertBefore(dropDraggableTarget, dropTemp);
+                        } else {
+                            insertAfter(dropDraggableTarget, dropTemp);
+                        }
+
+                        cleanWorkspace(dropTemp);
                     }
 
                     dropDraggableTarget.classList.remove(CLASS_DRAGOVER);
