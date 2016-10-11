@@ -8,34 +8,108 @@
     <link rel="stylesheet" href="dragster.style.css">
 </head>
 <body>
+    <svg
+        xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        style="position: absolute; width: 0; height: 0;">
+        <defs>
+            <symbol id="logo" viewBox="0 0 300 300">
+                <style>
+                    .bg,
+                    .star,
+                    .star-hole {
+                        fill-rule: nonzero;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                    }
+                    .letter-n,
+                    .letter-p,
+                    .letter-p-hole,
+                    .letter-n-hole {
+                        fill-rule: evenodd;
+                        stroke-width: 2px;
+                    }
+                    .star,
+                    .star-hole {
+                        stroke-width: 2px;
+                    }
+                    .star,
+                    .letter-n,
+                    .letter-p {
+                        fill: #ffffff;
+                    }
+                    .bg,
+                    .star-hole,
+                    .letter-p-hole,
+                    .letter-n-hole {
+                        fill: #b24210;
+                    }
+                </style>
+                <g id="container-logo">
+                    <rect width="300" height="300" x="0" y="0" class="bg"/>
+                    <g id="container-letter-n">
+                        <rect width="260" height="110" x="20" y="170" class="letter-n"/>
+                        <rect width="220" height="90" x="40" y="191" class="letter-n-hole"/>
+                    </g>
+                    <g id="container-letter-p">
+                        <path d="M 150 170 L 150 20 L 280 20 L 280 100 L 170 100 L 170 170 L 150 170 z" class="letter-p"/>
+                        <rect width="90" height="40" x="170" y="40" class="letter-p-hole"/>
+                    </g>
+                    <g id="container-star">
+                        <path d="
+                            M 67.553 95.000
+                            L 96.942 110.451
+                            L 91.329 77.725
+                            L 115.106 54.549
+                            L 82.248 49.775
+                            L 67.553 20.000
+                            L 52.858 49.775
+                            L 20.000 54.549
+                            L 43.777 77.725
+                            L 38.164 110.451
+                            L 67.553 95.000 z
+                          " class="star" transform-origin="50%,50%"/>
+                        <circle cx="67.553" cy="70" r="20" class="star-hole" />
+                    </g>
+                </g>
+            </symbol>
+        </defs>
+    </svg>
     <h1>Dragster.js Demo</h1>
-    <div class="dragster-region">
-        <div class="dragster-block">1.1</div>
-        <div class="dragster-block">
-            <h3>Dragster Block 1.2</h3>
-            <img src="sunpietro.png" alt="Sunpietro - logo" width="150" height="150">
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+    <div class="regions">
+        <div class="dragster-region">
+            <div class="dragster-block">1.1</div>
+            <div class="dragster-block">
+                <h3>Dragster Block 1.2</h3>
+                <svg><use xlink:href="#logo"></use></svg>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            </div>
+            <div class="dragster-block">1.3</div>
+            <div class="dragster-block">1.4</div>
         </div>
-        <div class="dragster-block">1.3</div>
-        <div class="dragster-block">1.4</div>
-    </div>
-    <div class="dragster-region">
-        <div class="dragster-block">
-            <h3>Dragster Block 2.1</h3>
-            <img src="sunpietro.png" alt="Sunpietro - logo" width="150" height="150">
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+        <div class="dragster-region">
+            <div class="dragster-block">
+                <h3>Dragster Block 2.1</h3>
+                <svg><use xlink:href="#logo"></use></svg>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            </div>
+            <div class="dragster-block">2.2</div>
+            <div class="dragster-block">2.3</div>
+            <div class="dragster-block">2.4</div>
         </div>
-        <div class="dragster-block">2.2</div>
-        <div class="dragster-block">2.3</div>
-        <div class="dragster-block">2.4</div>
+        <div class="dragster-region dragster-region--drag-only">
+            <p>Elements cannot be dropped here. They are copied from here.</p>
+            <div class="dragster-block">3.1</div>
+            <div class="dragster-block">3.2</div>
+            <div class="dragster-block">3.3</div>
+        </div>
     </div>
-    <script src="dragster.min.js"></script>
+    <script src="dragster.js"></script>
     <script>
     (function () {
         new window.Dragster({
-            elementSelector: '.dragster-block',
-            regionSelector: '.dragster-region',
-            minimumRegionHeight: 60
+            cloneElements: true
         });
     })();
     </script>

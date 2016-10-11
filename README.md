@@ -78,6 +78,18 @@ var dragster = new window.Dragster({
 dragster.update();
 ```
 
+## Allow cloning blocks from a selected zones
+Imagine you have a shopping cart with a list of products. You want to allow dropping multiple items into the shopping cart without removing an item from the list of available shop items.
+
+```javascript
+var dragster = new window.Dragster({
+    elementSelector: '.dragster-block',
+    regionSelector: '.dragster-region',
+    dragOnlyRegionCssClass: 'dragster-region--drag-only',
+    cloneElements: true
+});
+```
+
 ## Properties
 List of properties:
 ### elementSelector (required) - {String}
@@ -85,16 +97,23 @@ It is a CSS selector to find all the elements on the page that should be draggab
 ### regionSelector (required) - {String}
 It is a CSS selector to find all the regions where elements can be dragged onto and where all the drag'n'drop functionality works as expected.
 Default value: `'.dragster-region'`
-### replaceElements - {Boolean}
-It is indicator whether elements should be moved in regions or whether they should replace each other when user drops element.
+### replaceOnDrop - {Boolean}
+Indidator stating if dropped element should switch position with drop target.
+It takes either `true` or `false` value. Default value: `false`.
+### copyOnDrop - {Boolean}
+Indicator stating if dropped element should be copied into a new position.
 It takes either `true` or `false` value. Default value: `false`.
 ### updateRegionsHeight - {Boolean}
 It is indicator whether regions should update their height according to the number of elements visible in the region.
 It takes either `true` or `false` value. Default value: `true`.
 ### minimumRegionHeight - {Number}
-Tell the dragster to not to resize the regions below provided value. Default value: `50`.
+Tell the dragster to not to resize the regions below provided value. Default value: `60`.
 ### scrollWindowOnDrag - {Boolean}
 Tell the dragster to scroll window while dragging an element. Default value: `false`.
+### dragOnlyRegionCssClass - {String}
+The drag-only region CSS class name. Used to identify regions. Default value: `'dragster-region--drag-only'`.
+### cloneElements - {Boolean}
+The flag stating the elements can be cloned from region to region. Requires `dragOnlyRegionCssClass` to be applied in the HTML markup of a page. Default value: `false`.
 
 
 ## Properties - callbacks
