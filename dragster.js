@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.3.0
+ * Dragster - drag'n'drop library v1.3.1
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2016 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2016-10-11T20:30Z
+ * Date: 2016-10-17T20:30Z
  */
 (function (window, document) {
     'use strict';
@@ -439,6 +439,9 @@
              * @param event {Object} event object
              */
             mousedown: function (event) {
+                var targetRegion,
+                    listenToEventName;
+
                 event.dragster = dragsterEventInfo;
 
                 if (finalParams.onBeforeDragStart(event) === FALSE || event.which === 3 /* detect right click */) {
@@ -447,8 +450,7 @@
 
                 event.preventDefault();
 
-                var targetRegion,
-                    listenToEventName = event.type === EVT_TOUCHSTART ? EVT_TOUCHMOVE : EVT_MOUSEMOVE;
+                listenToEventName = event.type === EVT_TOUCHSTART ? EVT_TOUCHMOVE : EVT_MOUSEMOVE;
 
                 regions.forEach(function (region) {
                     region.addEventListener(listenToEventName, regionEventHandlers.mousemove);
@@ -511,7 +513,13 @@
                     left = elementPositionX - (shadowElementRegion.width / 2),
                     placeholder = createPlaceholder(),
                     isInDragOnlyRegion = !!(dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)),
+                    isTargetRegion = unknownTarget.classList.contains(CLASS_REGION),
+                    isTargetRegionDragOnly = unknownTarget.classList.contains(CLASS_DRAG_ONLY),
+                    isTargetPlaceholder = unknownTarget.classList.contains(CLASS_PLACEHOLDER),
+                    hasTargetDraggaBleElements = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0,
+                    hasTargetPlaceholders = unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length > 0,
                     dropTargetRegion,
+                    elementsInRegion,
                     maxDistance;
 
                 clearTimeout(hideShadowElementTimeout);
@@ -549,21 +557,14 @@
 
                     dragsterEventInfo.placeholder.node = placeholder;
                     dragsterEventInfo.drop.node = dropTarget;
-                } else if (unknownTarget.classList.contains(CLASS_REGION) &&
-                    unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length === 0 &&
-                    unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
-
+                } else if (isTargetRegion && !isTargetRegionDragOnly && !hasTargetDraggaBleElements && !hasTargetPlaceholders) {
                     unknownTarget.appendChild(placeholder);
 
                     dragsterEventInfo.placeholder.position = POS_BOTTOM;
                     dragsterEventInfo.placeholder.node = placeholder;
                     dragsterEventInfo.drop.node = unknownTarget;
-                } else if (unknownTarget.classList.contains(CLASS_REGION) &&
-                    unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0 &&
-                    unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length === 0) {
-
-                    var elementsInRegion = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE);
-
+                } else if (isTargetRegion && !isTargetRegionDragOnly && hasTargetDraggaBleElements && !hasTargetPlaceholders) {
+                    elementsInRegion = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE);
                     dropTarget = elementsInRegion[elementsInRegion.length - 1];
 
                     placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
@@ -573,8 +574,7 @@
                     dragsterEventInfo.placeholder.position = POS_BOTTOM;
                     dragsterEventInfo.placeholder.node = placeholder;
                     dragsterEventInfo.drop.node = dropTarget;
-
-                } else if (!unknownTarget.classList.contains(CLASS_REGION)) {
+                } else if (!isTargetRegion && !isTargetPlaceholder) {
                     if (!finalParams.replaceElements) {
                         removeElements(CLASS_PLACEHOLDER);
                     } else {
