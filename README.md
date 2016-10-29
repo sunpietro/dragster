@@ -3,7 +3,7 @@
 Tiny vanilla JS library that enables drag'n'drop interactions to a user of your website.
 By implementing this library a user is able to drag'n'drop elements on user-defined drop regions.
 It works both on desktop (using mouse interface) and mobile devices (using touch interface).
-It's only 3kB minified.
+It's only ~2.35kB minified and gzipped
 
 See the library in action at the demo page: [Dragster.js demo page](http://sunpietro.github.io/dragster/)
 
@@ -133,6 +133,8 @@ After drag move callback.
 Before drag end callback. Can prevent from dropping an element.
 ### onAfterDragEnd - {Function}
 After drag end callback.
+### onAfterDragDrop - {Function}
+After drop callback.
 
 ## Methods
 List of methods ready to be used by any webdeveloper:
