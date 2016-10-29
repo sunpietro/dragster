@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.3.1
+ * Dragster - drag'n'drop library v1.3.2
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2016 Piotr Nalepa
@@ -50,6 +50,7 @@
                 onAfterDragMove: dummyCallback,
                 onBeforeDragEnd: dummyCallback,
                 onAfterDragEnd: dummyCallback,
+                onAfterDragDrop: dummyCallback,
                 scrollWindowOnDrag: FALSE,
                 dragOnlyRegionsEnabled: FALSE,
                 cloneElements: FALSE
@@ -118,7 +119,28 @@
                      * @example 'top' or 'bottom'
                      */
                     position: ''
-                }
+                },
+                /**
+                 * Reference to dropped element
+                 *
+                 * @property dropped
+                 * @type {HTMLElement}
+                 */
+                dropped: null,
+                /**
+                 * Reference to cloned element
+                 *
+                 * @property clonedFrom
+                 * @type {HTMLElement}
+                 */
+                clonedFrom: null,
+                /**
+                 * Reference to dropped cloned element
+                 *
+                 * @property clonedTo
+                 * @type {HTMLElement}
+                 */
+                clonedTo: null
             },
             dragsterEventInfo,
             key,
@@ -147,6 +169,9 @@
             updateRegionsHeight,
             scrollWindow,
             discoverWindowHeight,
+            moveElementOnDrop,
+            replaceElementsOnDrop,
+            cloneElementsOnDrop,
             windowHeight = window.innerHeight;
 
         // merge the object with default config with an object with params provided by a developer
@@ -473,7 +498,7 @@
 
                 draggedElement.classList.add(CLASS_DRAGGING);
 
-                dragsterEventInfo = defaultDragsterEventInfo;
+                dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
                 dragsterEventInfo.drag.node = draggedElement;
                 dragsterEventInfo.shadow.node = shadowElement;
 
@@ -611,11 +636,9 @@
                 var findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER,
                     dropTarget = document.getElementsByClassName(findByClass)[0],
                     dropDraggableTarget,
-                    placeholderPosition,
                     isFromDragOnlyRegion = !!(draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback)),
                     unlistenToEventName = event.type === EVT_TOUCHSTART ? EVT_TOUCHMOVE : EVT_MOUSEMOVE,
-                    canBeCloned = finalParams.cloneElements && isFromDragOnlyRegion,
-                    dropTemp;
+                    canBeCloned = finalParams.cloneElements && isFromDragOnlyRegion;
 
                 hideShadowElementTimeout = setTimeout(function () {
                     cleanWorkspace(draggedElement, unlistenToEventName);
@@ -634,36 +657,17 @@
 
                 if (draggedElement !== dropDraggableTarget) {
                     if (!finalParams.replaceElements && !canBeCloned) {
-                        dropTemp = createElementWrapper();
-                        placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+                        event.dragster = moveElementOnDrop(event.dragster, dropTarget, dropDraggableTarget);
 
-                        if (placeholderPosition === POS_TOP) {
-                            insertBefore(dropDraggableTarget, dropTemp);
-                        } else {
-                            insertAfter(dropDraggableTarget, dropTemp);
-                        }
-
-                        if (draggedElement.firstChild) {
-                            dropTemp.appendChild(draggedElement.firstChild);
-                        }
+                        finalParams.onAfterDragDrop(event);
                     } else if (finalParams.replaceElements && !canBeCloned) {
-                        dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
-                        dropTemp.innerHTML = draggedElement.innerHTML;
+                        event.dragster = replaceElementsOnDrop(event.dragster, dropDraggableTarget);
 
-                        draggedElement.innerHTML = dropDraggableTarget.innerHTML;
-                        dropDraggableTarget.innerHTML = dropTemp.innerHTML;
-                        dropTemp.innerHTML = '';
+                        finalParams.onAfterDragDrop(event);
                     } else if (!finalParams.replaceElements && canBeCloned) {
-                        dropTemp = draggedElement.cloneNode(true);
-                        placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+                        event.dragster = cloneElementsOnDrop(event.dragster, dropTarget, dropDraggableTarget);
 
-                        if (placeholderPosition === POS_TOP) {
-                            insertBefore(dropDraggableTarget, dropTemp);
-                        } else {
-                            insertAfter(dropDraggableTarget, dropTemp);
-                        }
-
-                        cleanWorkspace(dropTemp);
+                        finalParams.onAfterDragDrop(event);
                     }
 
                     dropDraggableTarget.classList.remove(CLASS_DRAGOVER);
@@ -673,6 +677,85 @@
 
                 finalParams.onAfterDragEnd(event);
             }
+        };
+
+        /**
+         * Moves element to the final position on drop
+         *
+         * @method moveElementOnDrop
+         * @private
+         * @param dragsterEvent {Object} dragster properties from event
+         * @param dropTarget {HTMLElement} region where dragged element will be placed after drop
+         * @param dropDraggableTarget {HTMLElement} final destination of dragged element
+         * @return {Object} updated event info
+         */
+        moveElementOnDrop = function (dragsterEvent, dropTarget, dropDraggableTarget) {
+            var dropTemp = createElementWrapper(),
+                placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+
+            if (placeholderPosition === POS_TOP) {
+                insertBefore(dropDraggableTarget, dropTemp);
+            } else {
+                insertAfter(dropDraggableTarget, dropTemp);
+            }
+
+            if (draggedElement.firstChild) {
+                dropTemp.appendChild(draggedElement.firstChild);
+            }
+
+            dragsterEvent.dropped = dropTemp;
+
+            return dragsterEvent;
+        };
+
+        /**
+         * Replaces element with target element on drop
+         *
+         * @method replaceElementsOnDrop
+         * @private
+         * @param dragsterEvent {Object} dragster properties from event
+         * @param dropDraggableTarget {HTMLElement} final destination of dragged element
+         * @return {Object} updated event info
+         */
+        replaceElementsOnDrop = function (dragsterEvent, dropDraggableTarget) {
+            var dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
+
+            dropTemp.innerHTML = draggedElement.innerHTML;
+
+            draggedElement.innerHTML = dropDraggableTarget.innerHTML;
+            dropDraggableTarget.innerHTML = dropTemp.innerHTML;
+            dropTemp.innerHTML = '';
+            dragsterEvent.dropped = dropTemp;
+
+            return dragsterEvent;
+        };
+
+        /**
+         * Clones element to the final position on drop
+         *
+         * @method cloneElementsOnDrop
+         * @private
+         * @param dragsterEvent {Object} dragster properties from event
+         * @param dropTarget {HTMLElement} region where dragged element will be placed after drop
+         * @param dropDraggableTarget {HTMLElement} final destination of dragged element
+         * @return {Object} updated event info
+         */
+        cloneElementsOnDrop = function (dragsterEvent, dropTarget, dropDraggableTarget) {
+            var dropTemp = draggedElement.cloneNode(true),
+                placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+
+            if (placeholderPosition === POS_TOP) {
+                insertBefore(dropDraggableTarget, dropTemp);
+            } else {
+                insertAfter(dropDraggableTarget, dropTemp);
+            }
+
+            cleanWorkspace(dropTemp);
+
+            dragsterEvent.clonedFrom = draggedElement;
+            dragsterEvent.clonedTo = dropTemp;
+
+            return dragsterEvent;
         };
 
         /**
