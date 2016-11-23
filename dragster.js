@@ -554,7 +554,7 @@
                 dragsterEventInfo.shadow.left = left;
 
                 if (dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion) {
-                    moveActions.addPlaceholderOnTarget(dropTarget, elementPositionY);
+                    moveActions.addPlaceholderOnTarget(dropTarget, elementPositionY, pageYOffset);
                 } else if (isTargetRegion && !isTargetRegionDragOnly && !hasTargetDraggaBleElements && !hasTargetPlaceholders) {
                     moveActions.addPlaceholderInRegion(unknownTarget);
                 } else if (isTargetRegion && !isTargetRegionDragOnly && hasTargetDraggaBleElements && !hasTargetPlaceholders) {
@@ -643,8 +643,9 @@
              * @private
              * @param dropTarget {HTMLElement} a drop target element
              * @param elementPositionY {Number} position Y of dragged element
+             * @param pageYOffset {number} position of the scroll bar
              */
-            addPlaceholderOnTarget: function (dropTarget, elementPositionY) {
+            addPlaceholderOnTarget: function (dropTarget, elementPositionY, pageYOffset) {
                 var dropTargetRegion = dropTarget.getBoundingClientRect(),
                     placeholder = createPlaceholder(),
                     maxDistance = dropTargetRegion.height / 2;
@@ -652,13 +653,13 @@
                 cleanReplacables();
 
                 if (!finalParams.replaceElements) {
-                    if ((elementPositionY - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
+                    if (((elementPositionY - pageYOffset) - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
                         removeElements(CLASS_PLACEHOLDER);
                         placeholder.setAttribute(placeholderAttrName, POS_TOP);
                         insertBefore(dropTarget.firstChild, placeholder);
 
                         dragsterEventInfo.placeholder.position = POS_TOP;
-                    } else if ((dropTargetRegion.bottom - elementPositionY) < maxDistance && !visiblePlaceholder.bottom) {
+                    } else if ((dropTargetRegion.bottom - (elementPositionY - pageYOffset)) < maxDistance && !visiblePlaceholder.bottom) {
                         removeElements(CLASS_PLACEHOLDER);
                         placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
                         dropTarget.appendChild(placeholder);
