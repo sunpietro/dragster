@@ -652,13 +652,13 @@
                 cleanReplacables();
 
                 if (!finalParams.replaceElements) {
-                    if ((elementPositionY - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
+                    if (((elementPositionY - pageYOffset) - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
                         removeElements(CLASS_PLACEHOLDER);
                         placeholder.setAttribute(placeholderAttrName, POS_TOP);
                         insertBefore(dropTarget.firstChild, placeholder);
 
                         dragsterEventInfo.placeholder.position = POS_TOP;
-                    } else if ((dropTargetRegion.bottom - elementPositionY) < maxDistance && !visiblePlaceholder.bottom) {
+                    } else if ((dropTargetRegion.bottom - (elementPositionY - pageYOffset)) < maxDistance && !visiblePlaceholder.bottom) {
                         removeElements(CLASS_PLACEHOLDER);
                         placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
                         dropTarget.appendChild(placeholder);
