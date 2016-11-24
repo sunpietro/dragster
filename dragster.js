@@ -54,7 +54,8 @@
                 onAfterDragDrop: dummyCallback,
                 scrollWindowOnDrag: FALSE,
                 dragOnlyRegionsEnabled: FALSE,
-                cloneElements: FALSE
+                cloneElements: FALSE,
+                wrapDraggableElements: TRUE
             },
             draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
@@ -201,6 +202,17 @@
          * @return {Array}
          */
         wrapDraggableElements = function (elements) {
+            if (finalParams.wrapDraggableElements === FALSE) {
+                console.warn(
+                  'You have disabled the default behavior of wrapping the draggable elements, ' +
+                  'if you want dragster to work properly you still will have to do this manually.\n' +
+                  '\n' +
+                  'More inf: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
+                );
+
+                return FALSE;
+            }
+
             elements.forEach(function (draggableElement) {
                 var wrapper = createElementWrapper(),
                     draggableParent = draggableElement.parentNode;

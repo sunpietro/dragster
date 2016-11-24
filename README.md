@@ -114,7 +114,13 @@ Tell the dragster to scroll window while dragging an element. Default value: `fa
 The drag-only region CSS class name. Used to identify regions. Default value: `'dragster-region--drag-only'`.
 ### cloneElements - {Boolean}
 The flag stating the elements can be cloned from region to region. Requires `dragOnlyRegionCssClass` to be applied in the HTML markup of a page. Default value: `false`.
+### wrapDraggableElements - {Boolean}
+By default all draggable elements are wrapped in a wrapper `<div>`, by settings this variable to `false` this behavior can be disabled. This can sometimes be useful when using the script in frameworks like Angular or such. 
 
+**IMPORTANT**
+
+If you put this value to `false`, you **MUST** do the wrapping of the elements yourself. 
+A wrapper container looks like this `<div draggable="true" class="dragster-draggable"> ... </div>`
 
 ## Properties - callbacks
 These properties allow a developer to control the behaviour of dragster.js library using callbacks.
