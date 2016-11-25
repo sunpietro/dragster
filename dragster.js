@@ -207,7 +207,7 @@
                   'You have disabled the default behavior of wrapping the draggable elements, ' +
                   'if you want dragster to work properly you still will have to do this manually.\n' +
                   '\n' +
-                  'More inf: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
+                  'More info: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
                 );
 
                 return FALSE;
@@ -387,7 +387,7 @@
          */
         insertAfter = function (elementTarget, elementAfter) {
             if (elementTarget && elementTarget.parentNode) {
-                elementTarget.parentNode.insertBefore(elementAfter, elementTarget.nextSibling);
+                elementTarget.parentNode.insertBefore(elementAfter, finalParams.wrapDraggableElements === FALSE ? elementTarget : elementTarget.nextSibling);
             }
         };
 
@@ -755,12 +755,16 @@
                     placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
 
                 if (placeholderPosition === POS_TOP) {
-                    insertBefore(dropDraggableTarget, dropTemp);
+                    insertBefore(dropDraggableTarget, finalParams.wrapDraggableElements === FALSE ? draggedElement : dropTemp);
                 } else {
-                    insertAfter(dropDraggableTarget, dropTemp);
+                    if (finalParams.wrapDraggableElements === FALSE) {
+                        insertAfter(draggedElement, dropDraggableTarget);
+                    } else {
+                        insertAfter(dropDraggableTarget, dropTemp);
+                    }
                 }
 
-                if (draggedElement.firstChild) {
+                if (draggedElement.firstChild && finalParams.wrapDraggableElements !== FALSE) {
                     dropTemp.appendChild(draggedElement.firstChild);
                 }
 
