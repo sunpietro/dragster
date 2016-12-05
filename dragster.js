@@ -37,10 +37,12 @@
             DIV = 'div',
             FALSE = false,
             TRUE = true,
+            NULL = null,
             dummyCallback = function () {},
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
+                dragHandleCssClass: NULL,
                 dragOnlyRegionCssClass: CLASS_DRAG_ONLY,
                 replaceElements: FALSE,
                 updateRegionsHeight: TRUE,
@@ -479,6 +481,10 @@
              * @param event {Object} event object
              */
             mousedown: function (event) {
+                if (finalParams.dragHandleCssClass !== NULL && event.target.classList.contains(finalParams.dragHandleCssClass) === FALSE) {
+                    return FALSE;
+                }
+
                 var targetRegion,
                     listenToEventName;
 
