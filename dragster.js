@@ -207,7 +207,7 @@
                   'You have disabled the default behavior of wrapping the draggable elements, ' +
                   'if you want dragster to work properly you still will have to do this manually.\n' +
                   '\n' +
-                  'More inf: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
+                  'More info: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
                 );
 
                 return FALSE;
@@ -387,7 +387,9 @@
          */
         insertAfter = function (elementTarget, elementAfter) {
             if (elementTarget && elementTarget.parentNode) {
-                elementTarget.parentNode.insertBefore(elementAfter, elementTarget.nextSibling);
+                var refChild = finalParams.wrapDraggableElements === FALSE ? elementTarget : elementTarget.nextSibling;
+
+                elementTarget.parentNode.insertBefore(elementAfter, refChild);
             }
         };
 
@@ -751,16 +753,20 @@
              * @return {Object} updated event info
              */
             moveElement: function (dragsterEvent, dropTarget, dropDraggableTarget) {
-                var dropTemp = createElementWrapper(),
+                var dropTemp = finalParams.wrapDraggableElements === FALSE ? draggedElement : createElementWrapper(),
                     placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
 
                 if (placeholderPosition === POS_TOP) {
                     insertBefore(dropDraggableTarget, dropTemp);
                 } else {
-                    insertAfter(dropDraggableTarget, dropTemp);
+                    if (finalParams.wrapDraggableElements === FALSE) {
+                        insertAfter(dropTemp, dropDraggableTarget);
+                    } else {
+                        insertAfter(dropDraggableTarget, dropTemp);
+                    }
                 }
 
-                if (draggedElement.firstChild) {
+                if (draggedElement.firstChild && finalParams.wrapDraggableElements === TRUE) {
                     dropTemp.appendChild(draggedElement.firstChild);
                 }
 
