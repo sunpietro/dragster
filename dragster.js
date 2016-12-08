@@ -481,7 +481,7 @@
              */
             mousedown: function (event) {
                 if (finalParams.dragHandleCssClass &&
-                    (typeof finalParams.dragHandleCssClass === 'string' ||
+                    (typeof finalParams.dragHandleCssClass !== 'string' ||
                     !event.target.classList.contains(finalParams.dragHandleCssClass))) {
                     return false;
                 }
