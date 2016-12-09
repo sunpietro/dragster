@@ -41,6 +41,7 @@
             finalParams = {
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
+                dragHandleCssClass: FALSE,
                 dragOnlyRegionCssClass: CLASS_DRAG_ONLY,
                 replaceElements: FALSE,
                 updateRegionsHeight: TRUE,
@@ -479,6 +480,12 @@
              * @param event {Object} event object
              */
             mousedown: function (event) {
+                if (finalParams.dragHandleCssClass &&
+                    (typeof finalParams.dragHandleCssClass !== 'string' ||
+                    !event.target.classList.contains(finalParams.dragHandleCssClass))) {
+                    return false;
+                }
+
                 var targetRegion,
                     listenToEventName;
 
