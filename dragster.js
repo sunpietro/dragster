@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.3.4
+ * Dragster - drag'n'drop library v1.3.5
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2016 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2016-11-25T07:00Z
+ * Date: 2016-12-12T07:00Z
  */
 (function (window, document) {
     'use strict';
@@ -37,6 +37,7 @@
             DIV = 'div',
             FALSE = false,
             TRUE = true,
+            NULL = null,
             dummyCallback = function () {},
             finalParams = {
                 elementSelector: '.dragster-block',
@@ -56,13 +57,12 @@
                 scrollWindowOnDrag: FALSE,
                 dragOnlyRegionsEnabled: FALSE,
                 cloneElements: FALSE,
-                wrapDraggableElements: TRUE
+                wrapDraggableElements: TRUE,
             },
-            draggableAttrName = 'draggable',
             placeholderAttrName = 'data-placeholder-position',
             visiblePlaceholder = {
                 top: FALSE,
-                bottom: FALSE
+                bottom: FALSE,
             },
             defaultDragsterEventInfo = {
                 drag: {
@@ -72,7 +72,7 @@
                      * @property node
                      * @type {HTMLElement}
                      */
-                    node: {}
+                    node: NULL,
                 },
                 drop: {
                     /**
@@ -81,7 +81,7 @@
                      * @property node
                      * @type {HTMLElement}
                      */
-                    node: {}
+                    node: NULL,
                 },
                 shadow: {
                     /**
@@ -90,7 +90,7 @@
                      * @property node
                      * @type {HTMLElement}
                      */
-                    node: {},
+                    node: NULL,
                     /**
                      * Contains top position value of shadow element
                      *
@@ -113,7 +113,7 @@
                      * @property node
                      * @type {HTMLElement}
                      */
-                    node: {},
+                    node: NULL,
                     /**
                      * Contains position type of placeholder
                      *
@@ -121,7 +121,7 @@
                      * @type {String}
                      * @example 'top' or 'bottom'
                      */
-                    position: ''
+                    position: NULL,
                 },
                 /**
                  * Reference to dropped element
@@ -129,21 +129,21 @@
                  * @property dropped
                  * @type {HTMLElement}
                  */
-                dropped: null,
+                dropped: NULL,
                 /**
                  * Reference to cloned element
                  *
                  * @property clonedFrom
                  * @type {HTMLElement}
                  */
-                clonedFrom: null,
+                clonedFrom: NULL,
                 /**
                  * Reference to dropped cloned element
                  *
                  * @property clonedTo
                  * @type {HTMLElement}
                  */
-                clonedTo: null
+                clonedTo: NULL,
             },
             dragsterEventInfo,
             key,
@@ -205,8 +205,8 @@
         wrapDraggableElements = function (elements) {
             if (finalParams.wrapDraggableElements === FALSE) {
                 console.warn(
-                  'You have disabled the default behavior of wrapping the draggable elements, ' +
-                  'if you want dragster to work properly you still will have to do this manually.\n' +
+                  'You have disabled the default behavior of wrapping the draggable elements. ' +
+                  'If you want Dragster.js to work properly you still will have to do this manually.\n' +
                   '\n' +
                   'More info: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
                 );
@@ -337,7 +337,6 @@
         createElementWrapper = function () {
             var wrapper = document.createElement(DIV);
 
-            wrapper.setAttribute(draggableAttrName, TRUE);
             wrapper.classList.add(CLASS_DRAGGABLE);
 
             return wrapper;
