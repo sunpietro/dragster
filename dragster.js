@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.3.5
+ * Dragster - drag'n'drop library v1.3.6
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2016 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2016-12-12T07:00Z
+ * Date: 2016-12-12T19:00Z
  */
 (function (window, document) {
     'use strict';
@@ -145,7 +145,7 @@
                  */
                 clonedTo: NULL,
             },
-            dragsterEventInfo,
+            dragsterEventInfo = {},
             key,
             regions,
             getElement,
@@ -574,10 +574,13 @@
                 dragsterEventInfo.shadow.left = left;
 
                 if (dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion) {
+                    moveActions.removePlaceholders();
                     moveActions.addPlaceholderOnTarget(dropTarget, elementPositionY, pageYOffset);
                 } else if (isTargetRegion && !isTargetRegionDragOnly && !hasTargetDraggaBleElements && !hasTargetPlaceholders) {
+                    moveActions.removePlaceholders();
                     moveActions.addPlaceholderInRegion(unknownTarget);
                 } else if (isTargetRegion && !isTargetRegionDragOnly && hasTargetDraggaBleElements && !hasTargetPlaceholders) {
+                    moveActions.removePlaceholders();
                     moveActions.addPlaceholderInRegionBelowTargets(unknownTarget);
                 } else if (!isTargetRegion && !isTargetPlaceholder) {
                     moveActions.removePlaceholders();
