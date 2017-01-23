@@ -24,7 +24,6 @@
             CLASS_TEMP_CONTAINER = CLASS_TEMP_ELEMENT + '-container',
             CLASS_HIDDEN = PREFIX_CLASS_DRAGSTER + 'is-hidden',
             CLASS_REPLACABLE = PREFIX_CLASS_DRAGSTER + 'replacable',
-            CLASS_DRAG_ONLY = PREFIX_CLASS_DRAGSTER + 'region--drag-only',
             EVT_TOUCHSTART = 'touchstart',
             EVT_TOUCHMOVE = 'touchmove',
             EVT_TOUCHEND = 'touchend',
@@ -43,7 +42,7 @@
                 elementSelector: '.dragster-block',
                 regionSelector: '.dragster-region',
                 dragHandleCssClass: FALSE,
-                dragOnlyRegionCssClass: CLASS_DRAG_ONLY,
+                dragOnlyRegionCssClass: PREFIX_CLASS_DRAGSTER + 'region--drag-only',
                 replaceElements: FALSE,
                 updateRegionsHeight: TRUE,
                 minimumRegionHeight: 60,
@@ -59,7 +58,6 @@
                 cloneElements: FALSE,
                 wrapDraggableElements: TRUE,
             },
-            placeholderAttrName = 'data-placeholder-position',
             visiblePlaceholder = {
                 top: FALSE,
                 bottom: FALSE,
@@ -174,7 +172,8 @@
             discoverWindowHeight,
             dropActions,
             moveActions,
-            windowHeight = window.innerHeight;
+            windowHeight = window.innerHeight,
+            dragsterId = Math.floor((1 + Math.random()) * 0x10000).toString(16);
 
         // merge the object with default config with an object with params provided by a developer
         for (key in params) {
@@ -258,7 +257,7 @@
             if (!parent ||
                 (element.classList &&
                     element.classList.contains(CLASS_REGION) &&
-                    !element.classList.contains(CLASS_DRAG_ONLY))
+                    !element.classList.contains(finalParams.dragOnlyRegionCssClass))
                 ) { return undefined; }
 
             if (callback(element)) { return element; }
@@ -277,6 +276,9 @@
             var elements = [].slice.call(document.getElementsByClassName(selector));
 
             elements.forEach(function (element) {
+                if (element.dataset.dragsterId !== dragsterId) {
+                    return;
+                }
                 element.parentNode.removeChild(element);
             });
         };
@@ -338,6 +340,7 @@
             var wrapper = document.createElement(DIV);
 
             wrapper.classList.add(CLASS_DRAGGABLE);
+            wrapper.dataset.dragsterId = dragsterId;
 
             return wrapper;
         };
@@ -353,6 +356,7 @@
             var placeholder = document.createElement(DIV);
 
             placeholder.classList.add(CLASS_PLACEHOLDER);
+            placeholder.dataset.dragsterId = dragsterId;
 
             return placeholder;
         };
@@ -371,6 +375,7 @@
             element.classList.add(CLASS_HIDDEN);
 
             element.style.position = 'fixed';
+            element.dataset.dragsterId = dragsterId;
 
             document.body.appendChild(element);
 
@@ -415,7 +420,12 @@
          * @param element {HTMLElement}
          * @return {Boolean}
          */
-        isDraggableCallback = function (element) { return (element.classList && element.classList.contains(CLASS_DRAGGABLE)); };
+        isDraggableCallback = function (element) {
+            return (
+                (element.classList && element.classList.contains(CLASS_DRAGGABLE)) &&
+                element.dataset.dragsterId === dragsterId
+            );
+        };
 
         /*
          * Test whether an element is a placeholder where a user can drop a dragged element
@@ -488,6 +498,8 @@
                 var targetRegion,
                     listenToEventName;
 
+                dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
+
                 event.dragster = dragsterEventInfo;
 
                 if (finalParams.onBeforeDragStart(event) === FALSE || event.which === 3 /* detect right click */) {
@@ -515,11 +527,11 @@
                 shadowElement.innerHTML = draggedElement.innerHTML;
                 shadowElement.style.width = targetRegion.width + UNIT;
                 shadowElement.style.height = targetRegion.height + UNIT;
+                shadowElement.dataset.dragsterId = dragsterId;
                 shadowElementRegion = shadowElement.getBoundingClientRect();
 
                 draggedElement.classList.add(CLASS_DRAGGING);
 
-                dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
                 dragsterEventInfo.drag.node = draggedElement;
                 dragsterEventInfo.shadow.node = shadowElement;
 
@@ -542,7 +554,7 @@
             mousemove: function (event) {
                 event.dragster = dragsterEventInfo;
 
-                if (finalParams.onBeforeDragMove(event) === FALSE) {
+                if (finalParams.onBeforeDragMove(event) === FALSE || !shadowElementRegion) {
                     return FALSE;
                 }
 
@@ -555,11 +567,13 @@
                     elementPositionX = eventObject.clientX + pageXOffset,
                     unknownTarget = document.elementFromPoint(eventObject.clientX, eventObject.clientY),
                     dropTarget = getElement(unknownTarget, isDraggableCallback),
+                    isDragNodeAvailable = dragsterEventInfo.drag.node && dragsterEventInfo.drag.node.dataset,
                     top = eventObject.clientY,
                     left = elementPositionX - (shadowElementRegion.width / 2),
                     isInDragOnlyRegion = !!(dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)),
-                    isTargetRegion = unknownTarget.classList.contains(CLASS_REGION),
-                    isTargetRegionDragOnly = unknownTarget.classList.contains(CLASS_DRAG_ONLY),
+                    isAllowedTarget = unknownTarget.dataset.dragsterId === dragsterId,
+                    isTargetRegion = unknownTarget.classList.contains(CLASS_REGION) && isAllowedTarget,
+                    isTargetRegionDragOnly = unknownTarget.classList.contains(finalParams.dragOnlyRegionCssClass) && isAllowedTarget,
                     isTargetPlaceholder = unknownTarget.classList.contains(CLASS_PLACEHOLDER),
                     hasTargetDraggaBleElements = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0,
                     hasTargetPlaceholders = unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length > 0;
@@ -573,7 +587,9 @@
                 dragsterEventInfo.shadow.top = top;
                 dragsterEventInfo.shadow.left = left;
 
-                if (dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion) {
+                if (!isDragNodeAvailable && !isTargetRegion && !isTargetPlaceholder) {
+                    moveActions.removePlaceholders();
+                } else if (dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion) {
                     moveActions.removePlaceholders();
                     moveActions.addPlaceholderOnTarget(dropTarget, elementPositionY, pageYOffset);
                 } else if (isTargetRegion && !isTargetRegionDragOnly && !hasTargetDraggaBleElements && !hasTargetPlaceholders) {
@@ -582,8 +598,6 @@
                 } else if (isTargetRegion && !isTargetRegionDragOnly && hasTargetDraggaBleElements && !hasTargetPlaceholders) {
                     moveActions.removePlaceholders();
                     moveActions.addPlaceholderInRegionBelowTargets(unknownTarget);
-                } else if (!isTargetRegion && !isTargetPlaceholder) {
-                    moveActions.removePlaceholders();
                 }
 
                 if (finalParams.scrollWindowOnDrag) {
@@ -666,7 +680,7 @@
              * @private
              * @param dropTarget {HTMLElement} a drop target element
              * @param elementPositionY {Number} position Y of dragged element
-             * @param pageYOffset {number} position of the scroll bar
+             * @param pageYOffset {Number} position of the scroll bar
              */
             addPlaceholderOnTarget: function (dropTarget, elementPositionY, pageYOffset) {
                 var dropTargetRegion = dropTarget.getBoundingClientRect(),
@@ -676,15 +690,15 @@
                 cleanReplacables();
 
                 if (!finalParams.replaceElements) {
-                    if (((elementPositionY - pageYOffset) - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
+                    if ((elementPositionY - pageYOffset - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
                         removeElements(CLASS_PLACEHOLDER);
-                        placeholder.setAttribute(placeholderAttrName, POS_TOP);
+                        placeholder.dataset.placeholderPosition = POS_TOP;
                         insertBefore(dropTarget.firstChild, placeholder);
 
                         dragsterEventInfo.placeholder.position = POS_TOP;
                     } else if ((dropTargetRegion.bottom - (elementPositionY - pageYOffset)) < maxDistance && !visiblePlaceholder.bottom) {
                         removeElements(CLASS_PLACEHOLDER);
-                        placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
+                        placeholder.dataset.placeholderPosition = POS_BOTTOM;
                         dropTarget.appendChild(placeholder);
 
                         dragsterEventInfo.placeholder.position = POS_BOTTOM;
@@ -726,7 +740,7 @@
                     dropTarget = elementsInRegion[elementsInRegion.length - 1],
                     placeholder = createPlaceholder();
 
-                placeholder.setAttribute(placeholderAttrName, POS_BOTTOM);
+                placeholder.dataset.placeholderPosition = POS_BOTTOM;
                 removeElements(CLASS_PLACEHOLDER);
                 dropTarget.appendChild(placeholder);
 
@@ -763,7 +777,7 @@
              */
             moveElement: function (dragsterEvent, dropTarget, dropDraggableTarget) {
                 var dropTemp = finalParams.wrapDraggableElements === FALSE ? draggedElement : createElementWrapper(),
-                    placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+                    placeholderPosition = dropTarget.dataset.placeholderPosition;
 
                 if (placeholderPosition === POS_TOP) {
                     insertBefore(dropDraggableTarget, dropTemp);
@@ -818,7 +832,7 @@
              */
             cloneElements: function (dragsterEvent, dropTarget, dropDraggableTarget) {
                 var dropTemp = draggedElement.cloneNode(true),
-                    placeholderPosition = dropTarget.getAttribute(placeholderAttrName);
+                    placeholderPosition = dropTarget.dataset.placeholderPosition;
 
                 if (placeholderPosition === POS_TOP) {
                     insertBefore(dropDraggableTarget, dropTemp);
@@ -871,6 +885,8 @@
         // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
         regions.forEach(function (region) {
             region.classList.add(CLASS_REGION);
+            region.dataset.dragsterId = dragsterId;
+
             region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
             region.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
 
@@ -882,7 +898,9 @@
 
         return {
             update: function () {
-                wrapDraggableElements(findDraggableElements());
+                draggableElements = findDraggableElements();
+
+                wrapDraggableElements(draggableElements);
                 updateRegionsHeight();
                 discoverWindowHeight();
             }
