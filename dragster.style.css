@@ -16,7 +16,7 @@
 
 body {
     width: 100%;
-    max-width: 60rem;
+    max-width: 80vw;
     margin: auto;
     font: 100%/1.4 Arial, sans-serif;
     text-align: center;
@@ -112,4 +112,8 @@ body {
 
 .dragster-draggable.dragster-replacable {
     outline: 2px solid #b30;
+}
+
+.dragster-block .dragster-block {
+    background: #ddd;
 }
