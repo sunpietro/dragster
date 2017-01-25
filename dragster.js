@@ -57,6 +57,7 @@
                 dragOnlyRegionsEnabled: FALSE,
                 cloneElements: FALSE,
                 wrapDraggableElements: TRUE,
+                shadowElementUnderMouse: FALSE,
             },
             visiblePlaceholder = {
                 top: FALSE,
@@ -172,6 +173,8 @@
             discoverWindowHeight,
             dropActions,
             moveActions,
+            shadowElementPositionXDiff,
+            shadowElementPositionYDiff,
             windowHeight = window.innerHeight,
             dragsterId = Math.floor((1 + Math.random()) * 0x10000).toString(16);
 
@@ -496,7 +499,8 @@
                 }
 
                 var targetRegion,
-                    listenToEventName;
+                    listenToEventName,
+                    eventObject = event.changedTouches ? event.changedTouches[0] : event;
 
                 dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
 
@@ -523,6 +527,10 @@
                 }
 
                 targetRegion = draggedElement.getBoundingClientRect();
+
+                shadowElementPositionXDiff = targetRegion.left - eventObject.clientX;
+                shadowElementPositionYDiff = targetRegion.top - eventObject.clientY;
+
                 shadowElement = createShadowElement();
                 shadowElement.innerHTML = draggedElement.innerHTML;
                 shadowElement.style.width = targetRegion.width + UNIT;
@@ -567,9 +575,11 @@
                     elementPositionX = eventObject.clientX + pageXOffset,
                     unknownTarget = document.elementFromPoint(eventObject.clientX, eventObject.clientY),
                     dropTarget = getElement(unknownTarget, isDraggableCallback),
+                    top = finalParams.shadowElementUnderMouse ? eventObject.clientY + shadowElementPositionYDiff : eventObject.clientY,
+                    left = finalParams.shadowElementUnderMouse ?
+                        elementPositionX + shadowElementPositionXDiff :
+                        elementPositionX - (shadowElementRegion.width / 2),
                     isDragNodeAvailable = dragsterEventInfo.drag.node && dragsterEventInfo.drag.node.dataset,
-                    top = eventObject.clientY,
-                    left = elementPositionX - (shadowElementRegion.width / 2),
                     isInDragOnlyRegion = !!(dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)),
                     isAllowedTarget = unknownTarget.dataset.dragsterId === dragsterId,
                     isTargetRegion = unknownTarget.classList.contains(CLASS_REGION) && isAllowedTarget,
