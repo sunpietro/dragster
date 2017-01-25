@@ -76,8 +76,9 @@
             </symbol>
         </defs>
     </svg>
-    <h1>Dragster.js Demo</h1>
-    <div class="regions">
+    <h1>Dragster.js - Basic example demo</h1>
+    <p>The blocks below can be dragged and dropped in any region except the last one, which is a drag-only region. The elements from the last region will be copied when dropping on any droppable region.</p>
+    <div class="regions" id="container-0">
         <div class="dragster-region">
             <div class="dragster-block">1.1</div>
             <div class="dragster-block">
@@ -105,11 +106,58 @@
             <div class="dragster-block">3.3</div>
         </div>
     </div>
+    <h2>Dragster - draggable elements inside a draggable element demo</h2>
+    <p>The example below is a bit more advanced. It shows the possibility of implementing a drag'n'drop functionality inside a draggable element.</p>
+    <div class="regions" id="container-1">
+        <div class="dragster-region">
+            <div class="dragster-block">1.1</div>
+            <div class="dragster-block">
+                <h3>Dragster Block 1.2</h3>
+                <svg><use xlink:href="#logo"></use></svg>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            </div>
+            <div class="dragster-block">1.3</div>
+            <div class="dragster-block">1.4</div>
+        </div>
+        <div class="dragster-region">
+            <div class="dragster-block">Dragster Block 2.1</div>
+            <div class="dragster-block">
+                <h3>2.2 Second region - independent</h3>
+                <div class="regions" id="container-2">
+                    <div class="dragster-region">
+                        <div class="dragster-block">1.1</div>
+                        <div class="dragster-block">Dragster Block 1.2</div>
+                        <div class="dragster-block">1.3</div>
+                        <div class="dragster-block">1.4</div>
+                    </div>
+                    <div class="dragster-region">
+                        <div class="dragster-block">Dragster Block 2.1</div>
+                        <div class="dragster-block">2.2</div>
+                        <div class="dragster-block">2.3</div>
+                        <div class="dragster-block">2.4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="dragster.js"></script>
     <script>
     (function () {
-        new window.Dragster({
-            cloneElements: true
+        var d0 = new window.Dragster({
+            cloneElements: true,
+            regionSelector: '#container-0 > .dragster-region',
+            elementSelector: '#container-0 > .dragster-region > .dragster-block',
+        });
+
+        var d1 = new window.Dragster({
+            regionSelector: '#container-1 > .dragster-region',
+            elementSelector: '#container-1 > .dragster-region > .dragster-block',
+        });
+
+        var d2 = new window.Dragster({
+            cloneElements: false,
+            regionSelector: '#container-2 > .dragster-region',
+            elementSelector: '#container-2 > .dragster-region > .dragster-block',
         });
     })();
     </script>
