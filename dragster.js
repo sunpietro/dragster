@@ -746,8 +746,11 @@
              * @param regionTarget {HTMLElement} a region drop target
              */
             addPlaceholderInRegionBelowTargets: function (regionTarget) {
-                var elementsInRegion = regionTarget.getElementsByClassName(CLASS_DRAGGABLE),
-                    dropTarget = elementsInRegion[elementsInRegion.length - 1],
+                var elementsInRegion = [].slice.call(regionTarget.getElementsByClassName(CLASS_DRAGGABLE)),
+                    filteredElements = elementsInRegion.filter(function (elementInRegion) {
+                        return elementInRegion.dataset.dragsterId === dragsterId;
+                    }),
+                    dropTarget = filteredElements[filteredElements.length - 1],
                     placeholder = createPlaceholder();
 
                 placeholder.dataset.placeholderPosition = POS_BOTTOM;
