@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.4.1
+ * Dragster - drag'n'drop library v1.4.2
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2017 Piotr Nalepa
@@ -8,7 +8,7 @@
  * Released under the MIT license
  * https://github.com/sunpietro/dragster/blob/master/LICENSE
  *
- * Date: 2017-02-07T16:30Z
+ * Date: 2017-03-30T16:30Z
  */
 (function (window, document) {
     'use strict';
@@ -171,6 +171,7 @@
             updateRegionsHeight,
             scrollWindow,
             discoverWindowHeight,
+            resetDragsterWorkspace,
             dropActions,
             moveActions,
             shadowElementPositionXDiff,
@@ -481,6 +482,19 @@
             }
         };
 
+        /**
+         * Resets DragsterJS workspace by removing mouseup/touchend event listeners
+         *
+         * @method resetDragsterWorkspace
+         * @private
+         * @param moveEvent {String} move event name (either mousemove or touchmove)
+         * @param upEvent {String} up event name (either mouseup or touchend)
+         */
+        resetDragsterWorkspace = function (moveEvent, upEvent) {
+            cleanWorkspace(draggedElement, moveEvent);
+            cleanWorkspace(draggedElement, upEvent);
+        };
+
         regionEventHandlers = {
             /*
              * `mousedown` or `touchstart` event handler.
@@ -495,15 +509,16 @@
                 if (finalParams.dragHandleCssClass &&
                     (typeof finalParams.dragHandleCssClass !== 'string' ||
                     !event.target.classList.contains(finalParams.dragHandleCssClass))) {
-                    return false;
+                    return FALSE;
                 }
 
                 var targetRegion,
-                    listenToEventName,
+                    moveEvent,
+                    upEvent,
+                    isTouch = event.type === EVT_TOUCHSTART,
                     eventObject = event.changedTouches ? event.changedTouches[0] : event;
 
                 dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
-
                 event.dragster = dragsterEventInfo;
 
                 if (finalParams.onBeforeDragStart(event) === FALSE || event.which === 3 /* detect right click */) {
@@ -512,19 +527,22 @@
 
                 event.preventDefault();
 
-                listenToEventName = event.type === EVT_TOUCHSTART ? EVT_TOUCHMOVE : EVT_MOUSEMOVE;
-
-                regions.forEach(function (region) {
-                    region.addEventListener(listenToEventName, regionEventHandlers.mousemove);
-                });
-
-                document.body.addEventListener(listenToEventName, regionEventHandlers.mousemove);
-
                 draggedElement = getElement(event.target, isDraggableCallback);
 
                 if (!draggedElement) {
                     return FALSE;
                 }
+
+                moveEvent = isTouch ? EVT_TOUCHMOVE : EVT_MOUSEMOVE;
+                upEvent = isTouch ? EVT_TOUCHEND : EVT_MOUSEUP;
+
+                regions.forEach(function (region) {
+                    region.addEventListener(moveEvent, regionEventHandlers.mousemove, FALSE);
+                    region.addEventListener(upEvent, regionEventHandlers.mouseup, FALSE);
+                });
+
+                document.body.addEventListener(moveEvent, regionEventHandlers.mousemove, FALSE);
+                document.body.addEventListener(upEvent, regionEventHandlers.mouseup, FALSE);
 
                 targetRegion = draggedElement.getBoundingClientRect();
 
@@ -632,25 +650,32 @@
             mouseup: function (event) {
                 event.dragster = dragsterEventInfo;
 
+                var isTouch = event.type === EVT_TOUCHSTART,
+                    moveEvent = isTouch ? EVT_TOUCHMOVE : EVT_MOUSEMOVE,
+                    upEvent = isTouch ? EVT_TOUCHEND : EVT_MOUSEUP,
+                    findByClass,
+                    dropTarget,
+                    dropDraggableTarget,
+                    isFromDragOnlyRegion,
+                    canBeCloned;
+
                 if (finalParams.onBeforeDragEnd(event) === FALSE) {
+                    resetDragsterWorkspace(moveEvent, upEvent);
+
                     return FALSE;
                 }
 
-                var findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER,
-                    dropTarget = document.getElementsByClassName(findByClass)[0],
-                    dropDraggableTarget,
-                    isFromDragOnlyRegion = !!(draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback)),
-                    unlistenToEventName = event.type === EVT_TOUCHSTART ? EVT_TOUCHMOVE : EVT_MOUSEMOVE,
-                    canBeCloned = finalParams.cloneElements && isFromDragOnlyRegion;
+                findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER;
+                dropTarget = document.getElementsByClassName(findByClass)[0];
+                isFromDragOnlyRegion = !!(draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback)),
+                canBeCloned = finalParams.cloneElements && isFromDragOnlyRegion;
 
-                hideShadowElementTimeout = setTimeout(function () {
-                    cleanWorkspace(draggedElement, unlistenToEventName);
-                }, 200);
+                hideShadowElementTimeout = setTimeout(resetDragsterWorkspace, 200);
 
                 cleanReplacables();
 
                 if (!draggedElement || !dropTarget) {
-                    cleanWorkspace(draggedElement, unlistenToEventName);
+                    resetDragsterWorkspace(moveEvent, upEvent);
 
                     return FALSE;
                 }
@@ -676,7 +701,7 @@
                     dropDraggableTarget.classList.remove(CLASS_DRAGOVER);
                 }
 
-                cleanWorkspace(draggedElement, unlistenToEventName);
+                resetDragsterWorkspace(moveEvent, upEvent);
 
                 finalParams.onAfterDragEnd(event);
             }
@@ -892,19 +917,14 @@
 
         wrapDraggableElements(draggableElements);
 
-        document.body.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
-        document.body.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
-
         // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
         regions.forEach(function (region) {
             region.classList.add(CLASS_REGION);
             region.dataset.dragsterId = dragsterId;
 
             region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
-            region.addEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
-
             region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
-            region.addEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
+
         });
 
         window.addEventListener('resize', discoverWindowHeight, false);
