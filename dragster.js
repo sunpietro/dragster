@@ -167,6 +167,7 @@
             cleanWorkspace,
             cleanReplacables,
             findDraggableElements,
+            findRegionElements,
             wrapDraggableElements,
             updateRegionsHeight,
             scrollWindow,
@@ -176,6 +177,7 @@
             moveActions,
             shadowElementPositionXDiff,
             shadowElementPositionYDiff,
+            addEventListenersToRegions,
             windowHeight = window.innerHeight,
             dragsterId = Math.floor((1 + Math.random()) * 0x10000).toString(16);
 
@@ -195,6 +197,17 @@
          */
         findDraggableElements = function () {
             return [].slice.call(document.querySelectorAll(finalParams.elementSelector));
+        };
+
+        /*
+         * Find all regions elements on the page
+         *
+         * @private
+         * @method findRegionElements
+         * @return {Array}
+         */
+        findRegionElements = function () {
+            return [].slice.call(document.querySelectorAll(finalParams.regionSelector));
         };
 
         /*
@@ -232,7 +245,7 @@
         };
 
         draggableElements = findDraggableElements();
-        regions = [].slice.call(document.querySelectorAll(finalParams.regionSelector));
+        regions = findRegionElements();
 
         if (finalParams.replaceElements) {
             tempContainer = document.createElement(DIV);
@@ -917,15 +930,24 @@
 
         wrapDraggableElements(draggableElements);
 
-        // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
-        regions.forEach(function (region) {
-            region.classList.add(CLASS_REGION);
-            region.dataset.dragsterId = dragsterId;
+        /**
+         * Adds event listeners to the regions
+         *
+         * @method addEventListenersToRegions
+         * @private
+         */
+        addEventListenersToRegions = function () {
+            // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
+            regions.forEach(function (region) {
+                region.classList.add(CLASS_REGION);
+                region.dataset.dragsterId = dragsterId;
 
-            region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
-            region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
+                region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
+                region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
+            });
+        };
 
-        });
+        addEventListenersToRegions();
 
         window.addEventListener('resize', discoverWindowHeight, false);
 
@@ -936,6 +958,11 @@
                 wrapDraggableElements(draggableElements);
                 updateRegionsHeight();
                 discoverWindowHeight();
+            },
+            updateRegions: function () {
+                regions = findRegionElements();
+
+                addEventListenersToRegions();
             }
         };
     };
