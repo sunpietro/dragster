@@ -44,6 +44,16 @@ var dragster = new window.Dragster({
 });
 ```
 
+If you would like to use DragsterJS as ES6 module in the browser:
+
+```html
+<script type="module">
+    import Dragster from './dragster.es6.js';
+
+    const dragster = Dragster();
+</script>
+```
+
 And start having fun with dragging elements on the website.
 
 ## Replace elements instead of moving them
