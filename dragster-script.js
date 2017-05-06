@@ -1,29 +1,3 @@
-/*@preserve
- * Dragster - drag'n'drop library v1.5.0
- * https://github.com/sunpietro/dragster
- *
- * Copyright 2015-2017 Piotr Nalepa
- * http://blog.piotrnalepa.pl
- *
- * Released under the MIT license
- * https://github.com/sunpietro/dragster/blob/master/LICENSE
- *
- * Date: 2017-05-06T22:30Z
- */
-
-;(function (root, moduleName, factory) {
-    'use strict';
-
-    if (typeof define === 'function' && define.amd) {
-        define(moduleName, factory);
-    } else if (typeof exports === 'object') {
-        exports = module.exports = factory();
-    } else {
-        root[moduleName] = factory();
-    }
-})(this, 'Dragster', function () {
-    'use strict';
-
 var Dragster = function (params) {
     var PREFIX_CLASS_DRAGSTER = 'dragster-',
         CLASS_DRAGGING = 'is-dragging',
@@ -977,7 +951,3 @@ var Dragster = function (params) {
         }
     };
 };
-
-
-    return Dragster;
-});

@@ -1,11 +1,13 @@
 {
   "name": "dragsterjs",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Tiny vanilla JS plugin that enables drag'n'drop interactions to a user of your website",
   "main": "dragster.js",
   "scripts": {
+    "generate-modules": "node module-generator.js",
     "minify": "uglifyjs dragster.js --mangle --compress --comments --output dragster.min.js",
-    "gzip": "gzip -c dragster.min.js > dragster.min.js.gz"
+    "gzip": "gzip -c dragster.min.js > dragster.min.js.gz",
+    "deploy": "npm run generate-modules && npm run minify && npm run gzip"
   },
   "repository": {
     "type": "git",
