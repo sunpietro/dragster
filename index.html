@@ -142,24 +142,22 @@
     </div>
     <script src="dragster.js"></script>
     <script>
-    (function () {
-        var d0 = new window.Dragster({
+        var d0 = Dragster({
             cloneElements: true,
             regionSelector: '#container-0 > .dragster-region',
             elementSelector: '#container-0 > .dragster-region > .dragster-block',
         });
 
-        var d1 = new window.Dragster({
+        var d1 = Dragster({
             regionSelector: '#container-1 > .dragster-region',
             elementSelector: '#container-1 > .dragster-region > .dragster-block',
         });
 
-        var d2 = new window.Dragster({
+        var d2 = Dragster({
             cloneElements: false,
             regionSelector: '#container-2 > .dragster-region',
             elementSelector: '#container-2 > .dragster-region > .dragster-block',
         });
-    })();
     </script>
 </body>
 </html>
