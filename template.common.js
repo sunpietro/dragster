@@ -1,4 +1,4 @@
-[COMMENT]
+[COMMENT] //jshint ignore:line
 ;(function (root, moduleName, factory) {
     'use strict';
 

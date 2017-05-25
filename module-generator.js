@@ -1,3 +1,5 @@
+/* global Promise */
+
 var fs = require('fs');
 var promises = [
     new Promise(function (resolve, reject) {
@@ -9,7 +11,7 @@ var promises = [
             }
 
             resolve(data);
-        })
+        });
     }),
     new Promise(function (resolve, reject) {
         fs.readFile('dragster-comment.js', 'utf8', function (error, data) {
@@ -20,7 +22,7 @@ var promises = [
             }
 
             resolve(data);
-        })
+        });
     }),
     new Promise(function (resolve, reject) {
         fs.readFile('template.common.js', 'utf8', function (error, data) {
