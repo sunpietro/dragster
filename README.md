@@ -160,3 +160,7 @@ After drop callback.
 List of methods ready to be used by any webdeveloper:
 ### update
 Updates a reference to draggable elements. For example, when user adds a new element to any of droppable regions then running `update` method makes a new element draggable as well.
+### updateRegions
+Updates regions references and attaches event listeners to them
+### destroy
+Removes all event listeners related to DragsterJS
