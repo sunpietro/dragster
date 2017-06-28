@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.5.0
+ * Dragster - drag'n'drop library v1.6.0
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2017 Piotr Nalepa
@@ -10,7 +10,7 @@
  *
  * Date: 2017-05-06T22:30Z
  */
-
+ //jshint ignore:line
 var Dragster = function (params) {
     var PREFIX_CLASS_DRAGSTER = 'dragster-',
         CLASS_DRAGGING = 'is-dragging',
@@ -961,9 +961,29 @@ var Dragster = function (params) {
             regions = findRegionElements();
 
             addEventListenersToRegions();
+        },
+        destroy: function () {
+            regions.forEach(function (region) {
+                region.classList.remove(CLASS_REGION);
+
+                region.removeEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
+                region.removeEventListener(EVT_MOUSEMOVE, regionEventHandlers.mousemove, FALSE);
+                region.removeEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
+
+                region.removeEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
+                region.removeEventListener(EVT_TOUCHMOVE, regionEventHandlers.mousemove, FALSE);
+                region.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
+            });
+
+            document.body.removeEventListener(EVT_MOUSEMOVE, regionEventHandlers.mousemove, FALSE);
+            document.body.removeEventListener(EVT_TOUCHMOVE, regionEventHandlers.mousemove, FALSE);
+            document.body.removeEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
+            document.body.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
+
+            window.removeEventListener('resize', discoverWindowHeight, false);
         }
     };
 };
-
+ //jshint ignore:line
 
 export default Dragster;
