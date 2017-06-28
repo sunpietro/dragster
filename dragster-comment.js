@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.5.0
+ * Dragster - drag'n'drop library v1.6.0
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2017 Piotr Nalepa
