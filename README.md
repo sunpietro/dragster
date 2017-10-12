@@ -2,10 +2,12 @@
 
 [![DragsterJS NPM version](https://badge.fury.io/js/dragsterjs.svg)](https://badge.fury.io/js/dragsterjs)
 
+[![DragsterJS gzip size](http://img.badgesize.io/https://unpkg.com/dragsterjs/dragster.min.js?compression=gzip
+)](https://unpkg.com/dragsterjs/dragster.min.js)
+
 Tiny vanilla JS library that enables drag'n'drop interactions to a user of your website.
 By implementing this library a user is able to drag'n'drop elements on user-defined drop regions.
 It works both on desktop (using mouse interface) and mobile devices (using touch interface).
-It's only ~2.35kB minified and gzipped
 
 See the library in action at the demo page: [Dragster.js demo page](http://sunpietro.github.io/dragster/)
 
@@ -22,6 +24,11 @@ You can install this library in two different ways:
 
     ```
     bower install dragsterjs
+    ```
+* Install using Yarn:
+    
+    ```
+    yarn add dragsterjs
     ```
 
 ## The sample usage
