@@ -32,7 +32,7 @@ You can install this library in two different ways:
     ```
 
 ## The sample usage
-You can start using it preparing following HTML code:
+To start having fun with dragging elements on the website prepare the following HTML code and add few lines of CSS:
 
 ```html
 <div class="dragster-region">
@@ -56,12 +56,38 @@ If you would like to use DragsterJS as ES6 module in the browser:
 ```html
 <script type="module">
     import Dragster from './dragster.es6.js';
-
     const dragster = Dragster();
 </script>
 ```
 
-And start having fun with dragging elements on the website.
+There few lines of CSS are required to prevent issues while dropping the elements.
+
+``` css
+/*
+ * Prevents user from selecting text
+ * in the draggable elements
+ */
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+      user-select: none;
+  -khtml-user-drag: element;
+  -webkit-user-drag: element;
+}
+
+/* 
+ * Prevent the element currently being dragged from
+ * receive pointer events, otherwise the dropping
+ * zone behind it can't receive the hover mouse events.
+ */
+.dragster-temp {
+  pointer-events: none;
+}
+```
+
+If you need to further customize the look and feel of the elements being dragged or the dropping regions check the `dragster.style.css` file.
 
 ## Replace elements instead of moving them
 If you want to replace elements instead of moving them between regions you can initialize Dragster.js library with an option `replaceElements: true`:
