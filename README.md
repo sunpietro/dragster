@@ -60,7 +60,7 @@ If you would like to use DragsterJS as ES6 module in the browser:
 </script>
 ```
 
-There few lines of CSS are required to prevent issues while dropping the elements.
+These few lines of CSS are required to prevent issues while dropping the elements.
 
 ``` css
 /*
