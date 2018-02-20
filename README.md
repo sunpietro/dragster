@@ -68,13 +68,10 @@ These few lines of CSS are required to prevent issues while dropping the element
  * in the draggable elements
  */
 [draggable] {
-  -moz-user-select: none;
-  -khtml-user-select: none;
   -webkit-user-select: none;
-  -ms-user-select: none;
-      user-select: none;
-  -khtml-user-drag: element;
-  -webkit-user-drag: element;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 /* 
