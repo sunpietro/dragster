@@ -1,5 +1,3 @@
-/* eslint-env browser */
-
 // eslint-disable-next-line
 var Dragster = function(params) {
   var PREFIX_CLASS_DRAGSTER = 'dragster-',
