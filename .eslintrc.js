@@ -9,6 +9,6 @@ module.exports = {
     'comma-dangle': ['error', 'always'],
     'no-cond-assign': ['error', 'always'],
     'no-console': 'off',
-    'brace-style': 'error'
-  }
+    'brace-style': 'error',
+  },
 };
