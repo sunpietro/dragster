@@ -1,1 +1,7 @@
 node_modules/
+webpack.config.js
+dragster-comment.js
+dragster.es6.js
+dragster.min.js
+dragster.min.js.gz
+dragster.umd.js

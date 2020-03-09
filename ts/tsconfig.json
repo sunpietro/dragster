@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "../dist/",
+    "removeComments": true,
+    "module": "CommonJS",
+    "target": "ES6",
+    "downlevelIteration": true,
+    "allowJs": true,
+    "lib": ["DOM", "ES6", "DOM.Iterable"]
+  }
+}
