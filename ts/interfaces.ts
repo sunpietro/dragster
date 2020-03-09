@@ -14,13 +14,13 @@ export interface IDragsterInput {
   replaceElements?: boolean;
   updateRegionsHeight?: boolean;
   minimumRegionHeight?: number;
-  onBeforeDragStart?: (event: DragsterEvent) => boolean;
-  onAfterDragStart?: (event: DragsterEvent) => void;
-  onBeforeDragMove?: (event: DragsterEvent) => boolean;
-  onAfterDragMove?: (event: DragsterEvent) => void;
-  onBeforeDragEnd?: (event: DragsterEvent) => boolean;
-  onAfterDragEnd?: (event: DragsterEvent) => void;
-  onAfterDragDrop?: (event: DragsterEvent) => void;
+  onBeforeDragStart?: (event: IDragsterEvent) => boolean;
+  onAfterDragStart?: (event: IDragsterEvent) => void;
+  onBeforeDragMove?: (event: IDragsterEvent) => boolean;
+  onAfterDragMove?: (event: IDragsterEvent) => void;
+  onBeforeDragEnd?: (event: IDragsterEvent) => boolean;
+  onAfterDragEnd?: (event: IDragsterEvent) => void;
+  onAfterDragDrop?: (event: IDragsterEvent) => void;
   scrollWindowOnDrag?: boolean;
   dragOnlyRegionsEnabled?: boolean;
   cloneElements?: boolean;
@@ -28,31 +28,35 @@ export interface IDragsterInput {
   shadowElementUnderMouse?: boolean;
 }
 
-export interface IMouseTouchEvent extends MouseEvent {
-  changedTouches: TouchList;
+export interface ITouchList extends TouchList {
+  view: Window | null;
 }
 
-export interface DragsterEvent extends MouseEvent {
+export interface IMouseTouchEvent extends MouseEvent, TouchEvent {
+  changedTouches: ITouchList;
+}
+
+export interface IDragsterEvent extends IMouseTouchEvent {
   dragster: IDragsterEventInfo;
 }
 
 export interface IDragsterEventInfo {
-  drag: {
+  drag?: {
     node: HTMLElement;
   };
-  drop: {
+  drop?: {
     node: HTMLElement;
   };
-  shadow: {
+  shadow?: {
     node: HTMLElement;
     top: number;
     left: number;
   };
-  placeholder: {
+  placeholder?: {
     node: HTMLElement;
     position: EVisualPosition;
   };
-  dropped: HTMLElement;
-  clonedFrom: HTMLElement;
-  clonedTo: HTMLElement;
+  dropped?: HTMLElement;
+  clonedFrom?: HTMLElement;
+  clonedTo?: HTMLElement;
 }

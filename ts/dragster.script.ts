@@ -1,5 +1,10 @@
 import { EDomEvent, EVisualPosition } from './enums';
-import { IDragsterEventInfo, IMouseTouchEvent } from './interfaces';
+import {
+  IDragsterEventInfo,
+  IMouseTouchEvent,
+  IDragsterEvent,
+  ITouchList,
+} from './interfaces';
 import { TDragster } from './types';
 
 const dummyCallback = () => {};
@@ -14,7 +19,7 @@ const CLASS_HIDDEN = 'dragster-is-hidden';
 const CLASS_REPLACABLE = 'dragster-replacable';
 
 // eslint-disable-next-line
-const Dragster: TDragster = function({
+export const Dragster: TDragster = function({
   elementSelector = '.dragster-block',
   regionSelector = '.dragster-region',
   dragHandleCssClass = false,
@@ -62,10 +67,10 @@ const Dragster: TDragster = function({
 
     return callback(parent) ? parent : getElement(parent, callback);
   };
-  const createElement = (classnames: string) => {
+  const createElement = (classnames: string[]) => {
     const elementAfter = document.createElement('div');
 
-    elementAfter.classList.add(classnames);
+    elementAfter.classList.add(...classnames);
     elementAfter.dataset.dragsterId = dragsterId;
 
     return elementAfter;
@@ -89,7 +94,7 @@ const Dragster: TDragster = function({
    * Insert an element before a selected element
    */
   const insertBefore = (
-    elementTarget: HTMLElement,
+    elementTarget: ChildNode,
     elementBefore: HTMLElement
   ): void => {
     if (elementTarget && elementTarget.parentNode) {
@@ -100,12 +105,12 @@ const Dragster: TDragster = function({
    * Creates a wrapper for a draggable element
    */
   const createElementWrapper = (): HTMLElement =>
-    createElement(CLASS_DRAGGABLE);
+    createElement([CLASS_DRAGGABLE]);
   /*
    * Creates a copy of dragged element that follows the cursor movement
    */
   const createShadowElement = (): HTMLElement => {
-    const element = createElement(`${CLASS_TEMP_ELEMENT} ${CLASS_HIDDEN}`);
+    const element = createElement([CLASS_TEMP_ELEMENT, CLASS_HIDDEN]);
 
     element.style.position = 'fixed';
     document.body.appendChild(element);
@@ -115,7 +120,8 @@ const Dragster: TDragster = function({
   /*
    * Creates a placeholder where dragged element can be dropped into
    */
-  const createPlaceholder = (): HTMLElement => createElement(CLASS_PLACEHOLDER);
+  const createPlaceholder = (): HTMLElement =>
+    createElement([CLASS_PLACEHOLDER]);
   /*
    * Removes all elements defined by a selector from the DOM
    */
@@ -124,7 +130,7 @@ const Dragster: TDragster = function({
       ...document.getElementsByClassName(selector),
     ] as HTMLElement[];
 
-    elements.forEach(function(element) {
+    elements.forEach((element) => {
       if (element.dataset.dragsterId !== dragsterId) {
         return;
       }
@@ -279,7 +285,7 @@ const Dragster: TDragster = function({
   /**
    * Scrolls window while dragging an element
    */
-  const scrollWindow = (event: IMouseTouchEvent) => {
+  const scrollWindow = (event: IMouseTouchEvent): void => {
     const { changedTouches } = event;
     const positionY = (changedTouches ? changedTouches[0] : event).clientY;
     const diffSize = 60;
@@ -299,7 +305,7 @@ const Dragster: TDragster = function({
   /**
    * Adds event listeners to the regions
    */
-  const addEventListenersToRegions = (regions: HTMLElement[]) => {
+  const addEventListenersToRegions = (regions: HTMLElement[]): void => {
     // add `mousedown`/`touchstart` and `mouseup`/`touchend`
     // event listeners to regions
     regions.forEach((region) => {
@@ -322,7 +328,6 @@ const Dragster: TDragster = function({
     top: false,
     bottom: false,
   };
-  let defaultDragsterEventInfo: IDragsterEventInfo;
   let dragsterEventInfo: IDragsterEventInfo;
   let shadowElement;
   let shadowElementRegion;
@@ -340,77 +345,60 @@ const Dragster: TDragster = function({
 
   if (replaceElements) {
     document.body.appendChild(
-      createElement(`${CLASS_HIDDEN} ${CLASS_TEMP_CONTAINER}`)
+      createElement([CLASS_HIDDEN, CLASS_TEMP_CONTAINER])
     );
   }
 
   regionEventHandlers = {
     /*
      * `mousedown` or `touchstart` event handler.
-     * When user starts dragging an element the function adds a listener to either `mousemove` or `touchmove`
-     * events. Creates a shadow element that follows a movement of the cursor.
-     *
-     * @private
-     * @method regionEventHandlers.mousedown
-     * @param event {Object} event object
+     * When user starts dragging an element
+     * the function adds a listener to either
+     * `mousemove` or `touchmove` events.
+     * Creates a shadow element that follows a movement of the cursor.
      */
-    mousedown: function(event) {
+    mousedown: (event: IDragsterEvent): void => {
+      const { which: keyId, changedTouches, type } = event;
+      const target = event.target as HTMLElement;
+
       if (
         dragHandleCssClass &&
         (typeof dragHandleCssClass !== 'string' ||
-          !event.target.classList.contains(dragHandleCssClass))
+          !target.classList.contains(dragHandleCssClass))
       ) {
-        return false;
+        return;
       }
-
-      var targetRegion,
-        moveEvent,
-        upEvent,
-        isTouch = event.type === EDomEvent.TOUCHSTART,
-        eventObject = event.changedTouches ? event.changedTouches[0] : event;
-
-      dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
-      event.dragster = dragsterEventInfo;
 
       if (
         onBeforeDragStart(event) === false ||
-        event.which === 3 /* detect right click */
+        keyId === 3 /* detect right click */
       ) {
-        return false;
+        return;
       }
 
       event.preventDefault();
 
-      draggedElement = getElement(event.target, isDraggableCallback);
+      draggedElement = getElement(target, isDraggableCallback);
 
       if (!draggedElement) {
-        return false;
+        return;
       }
 
-      moveEvent = isTouch ? EDomEvent.TOUCHMOVE : EDomEvent.MOUSEMOVE;
-      upEvent = isTouch ? EDomEvent.TOUCHEND : EDomEvent.MOUSEUP;
+      const isTouch = type === EDomEvent.TOUCHSTART;
+      const eventObject = changedTouches ? changedTouches[0] : event;
+      const moveEvent = isTouch ? EDomEvent.TOUCHMOVE : EDomEvent.MOUSEMOVE;
+      const upEvent = isTouch ? EDomEvent.TOUCHEND : EDomEvent.MOUSEUP;
+      const { mousemove, mouseup } = regionEventHandlers;
 
-      regions.forEach(function(region) {
-        region.addEventListener(
-          moveEvent,
-          regionEventHandlers.mousemove,
-          false
-        );
-        region.addEventListener(upEvent, regionEventHandlers.mouseup, false);
+      regions.forEach((region) => {
+        region.addEventListener(moveEvent, mousemove, false);
+        region.addEventListener(upEvent, mouseup, false);
       });
 
-      document.body.addEventListener(
-        moveEvent,
-        regionEventHandlers.mousemove,
-        false
-      );
-      document.body.addEventListener(
-        upEvent,
-        regionEventHandlers.mouseup,
-        false
-      );
+      document.body.addEventListener(moveEvent, mousemove, false);
+      document.body.addEventListener(upEvent, mouseup, false);
 
-      targetRegion = draggedElement.getBoundingClientRect();
+      const targetRegion = draggedElement.getBoundingClientRect();
 
       shadowElementPositionXDiff = targetRegion.left - eventObject.clientX;
       shadowElementPositionYDiff = targetRegion.top - eventObject.clientY;
@@ -424,8 +412,15 @@ const Dragster: TDragster = function({
 
       draggedElement.classList.add(CLASS_DRAGGING);
 
-      dragsterEventInfo.drag.node = draggedElement;
-      dragsterEventInfo.shadow.node = shadowElement;
+      dragsterEventInfo = {
+        drag: { node: draggedElement },
+        drop: { node: null },
+        shadow: { node: shadowElement, top: null, left: null },
+        placeholder: { node: null, position: null },
+        dropped: null,
+        clonedFrom: null,
+        clonedTo: null,
+      } as IDragsterEventInfo;
 
       event.dragster = dragsterEventInfo;
 
@@ -438,54 +433,53 @@ const Dragster: TDragster = function({
      * so a user is able to drop a dragged element onto the placeholder.
      * In case when in a region there's no draggable element it just adds a placeholder to the region.
      * Updates a position of shadow element following the cursor.
-     *
-     * @private
-     * @method regionEventHandlers.mousemove
-     * @param event {Object} event object
      */
-    mousemove: function(event) {
+    mousemove: (event: IDragsterEvent): void => {
       event.dragster = dragsterEventInfo;
 
       if (onBeforeDragMove(event) === false || !shadowElementRegion) {
-        return false;
+        return;
       }
 
       event.preventDefault();
 
-      var eventObject = event.changedTouches ? event.changedTouches[0] : event,
-        pageXOffset = eventObject.view ? eventObject.view.pageXOffset : 0,
-        pageYOffset = eventObject.view ? eventObject.view.pageYOffset : 0,
-        elementPositionY = eventObject.clientY + pageYOffset,
-        elementPositionX = eventObject.clientX + pageXOffset,
-        unknownTarget = document.elementFromPoint(
-          eventObject.clientX,
-          eventObject.clientY
-        ) as HTMLElement,
-        dropTarget = getElement(unknownTarget, isDraggableCallback),
-        top = shadowElementUnderMouse
-          ? eventObject.clientY + shadowElementPositionYDiff
-          : eventObject.clientY,
-        left = shadowElementUnderMouse
-          ? elementPositionX + shadowElementPositionXDiff
-          : elementPositionX - shadowElementRegion.width / 2,
-        isDragNodeAvailable =
-          dragsterEventInfo.drag.node && dragsterEventInfo.drag.node.dataset,
-        isInDragOnlyRegion = !!(
-          dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)
-        ),
-        isAllowedTarget = unknownTarget.dataset.dragsterId === dragsterId,
-        isTargetRegion =
-          unknownTarget.classList.contains(CLASS_REGION) && isAllowedTarget,
-        isTargetRegionDragOnly =
-          unknownTarget.classList.contains(dragOnlyRegionCssClass) &&
-          isAllowedTarget,
-        isTargetPlaceholder = unknownTarget.classList.contains(
-          CLASS_PLACEHOLDER
-        ),
-        hasTargetDraggaBleElements =
-          unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0,
-        hasTargetPlaceholders =
-          unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length > 0;
+      const eventObject = (event.changedTouches
+        ? event.changedTouches.item(0)
+        : event) as IMouseTouchEvent;
+      const { view, clientX, clientY } = eventObject;
+      const pageXOffset = view ? view.pageXOffset : 0;
+      const pageYOffset = view ? view.pageYOffset : 0;
+      const elementPositionY = clientY + pageYOffset;
+      const elementPositionX = clientX + pageXOffset;
+      const unknownTarget = document.elementFromPoint(
+        clientX,
+        clientY
+      ) as HTMLElement;
+      const dropTarget = getElement(unknownTarget, isDraggableCallback);
+      const top = shadowElementUnderMouse
+        ? clientY + shadowElementPositionYDiff
+        : clientY;
+      const left = shadowElementUnderMouse
+        ? elementPositionX + shadowElementPositionXDiff
+        : elementPositionX - shadowElementRegion.width / 2;
+      const isDragNodeAvailable =
+        dragsterEventInfo.drag.node && dragsterEventInfo.drag.node.dataset;
+      const isInDragOnlyRegion = !!(
+        dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)
+      );
+      const isAllowedTarget = unknownTarget.dataset.dragsterId === dragsterId;
+      const isTargetRegion =
+        unknownTarget.classList.contains(CLASS_REGION) && isAllowedTarget;
+      const isTargetRegionDragOnly =
+        unknownTarget.classList.contains(dragOnlyRegionCssClass) &&
+        isAllowedTarget;
+      const isTargetPlaceholder = unknownTarget.classList.contains(
+        CLASS_PLACEHOLDER
+      );
+      const hasTargetDraggaBleElements =
+        unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0;
+      const hasTargetPlaceholders =
+        unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length > 0;
 
       clearTimeout(hideShadowElementTimeout);
 
@@ -496,33 +490,34 @@ const Dragster: TDragster = function({
       dragsterEventInfo.shadow.top = top;
       dragsterEventInfo.shadow.left = left;
 
-      if (!isDragNodeAvailable && !isTargetRegion && !isTargetPlaceholder) {
+      const cannotBeDropped =
+        !isDragNodeAvailable && !isTargetRegion && !isTargetPlaceholder;
+      const isNotDragOnlyDropTarget =
+        dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion;
+      const isEmptyDropTargetWithoutPlaceholder =
+        isTargetRegion &&
+        !isTargetRegionDragOnly &&
+        !hasTargetDraggaBleElements &&
+        !hasTargetPlaceholders;
+      const isNotEmptyDropTargetWithoutPlaceholder =
+        isTargetRegion &&
+        !isTargetRegionDragOnly &&
+        hasTargetDraggaBleElements &&
+        !hasTargetPlaceholders;
+
+      if (cannotBeDropped) {
         moveActions.removePlaceholders();
-      } else if (
-        dropTarget &&
-        dropTarget !== draggedElement &&
-        !isInDragOnlyRegion
-      ) {
+      } else if (isNotDragOnlyDropTarget) {
         moveActions.removePlaceholders();
         moveActions.addPlaceholderOnTarget(
           dropTarget,
           elementPositionY,
           pageYOffset
         );
-      } else if (
-        isTargetRegion &&
-        !isTargetRegionDragOnly &&
-        !hasTargetDraggaBleElements &&
-        !hasTargetPlaceholders
-      ) {
+      } else if (isEmptyDropTargetWithoutPlaceholder) {
         moveActions.removePlaceholders();
         moveActions.addPlaceholderInRegion(unknownTarget);
-      } else if (
-        isTargetRegion &&
-        !isTargetRegionDragOnly &&
-        hasTargetDraggaBleElements &&
-        !hasTargetPlaceholders
-      ) {
+      } else if (isNotEmptyDropTargetWithoutPlaceholder) {
         moveActions.removePlaceholders();
         moveActions.addPlaceholderInRegionBelowTargets(unknownTarget);
       }
@@ -541,35 +536,30 @@ const Dragster: TDragster = function({
      * Removes a listener to either `mousemove` or `touchmove` event.
      * Removes placeholders.
      * Removes a shadow element.
-     *
-     * @private
-     * @method regionEventHandlers.mouseup
-     * @param event {Object} event object
      */
-    mouseup: function(event) {
+    mouseup: (event: IDragsterEvent): void => {
       event.dragster = dragsterEventInfo;
 
-      var isTouch = event.type === EDomEvent.TOUCHSTART,
-        moveEvent = isTouch ? EDomEvent.TOUCHMOVE : EDomEvent.MOUSEMOVE,
-        upEvent = isTouch ? EDomEvent.TOUCHEND : EDomEvent.MOUSEUP,
-        findByClass,
-        dropTarget,
-        dropDraggableTarget,
-        isFromDragOnlyRegion,
-        canBeCloned;
+      const isTouch = event.type === EDomEvent.TOUCHSTART;
+      const moveEvent = isTouch ? EDomEvent.TOUCHMOVE : EDomEvent.MOUSEMOVE;
+      const upEvent = isTouch ? EDomEvent.TOUCHEND : EDomEvent.MOUSEUP;
 
       if (onBeforeDragEnd(event) === false) {
         resetDragsterWorkspace(moveEvent, upEvent, regions);
 
-        return false;
+        return;
       }
 
-      findByClass = replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER;
-      dropTarget = document.getElementsByClassName(findByClass)[0];
-      isFromDragOnlyRegion = !!(
+      const findByClass = replaceElements
+        ? CLASS_REPLACABLE
+        : CLASS_PLACEHOLDER;
+      const dropTarget = document.getElementsByClassName(
+        findByClass
+      )[0] as HTMLElement;
+      const isFromDragOnlyRegion = !!(
         draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback)
       );
-      canBeCloned = cloneElements && isFromDragOnlyRegion;
+      const canBeCloned = cloneElements && isFromDragOnlyRegion;
       hideShadowElementTimeout = setTimeout(
         () => resetDragsterWorkspace(moveEvent, upEvent, regions),
         200
@@ -580,10 +570,11 @@ const Dragster: TDragster = function({
       if (!draggedElement || !dropTarget) {
         resetDragsterWorkspace(moveEvent, upEvent, regions);
 
-        return false;
+        return;
       }
 
-      dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
+      let dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
+
       dropDraggableTarget = dropDraggableTarget || dropTarget;
 
       if (draggedElement !== dropDraggableTarget) {
@@ -624,21 +615,15 @@ const Dragster: TDragster = function({
   moveActions = {
     /**
      * Adds a new placeholder in relation to drop target
-     *
-     * @method moveActions.addPlaceholderOnTarget
-     * @private
-     * @param dropTarget {HTMLElement} a drop target element
-     * @param elementPositionY {Number} position Y of dragged element
-     * @param pageYOffset {Number} position of the scroll bar
      */
-    addPlaceholderOnTarget: function(
-      dropTarget,
-      elementPositionY,
-      pageYOffset
-    ) {
-      var dropTargetRegion = dropTarget.getBoundingClientRect(),
-        placeholder = createPlaceholder(),
-        maxDistance = dropTargetRegion.height / 2;
+    addPlaceholderOnTarget: (
+      dropTarget: HTMLElement,
+      elementPositionY: number,
+      pageYOffset: number
+    ): void => {
+      const dropTargetRegion = dropTarget.getBoundingClientRect();
+      const placeholder = createPlaceholder();
+      const maxDistance = dropTargetRegion.height / 2;
 
       cleanReplacables();
 
@@ -673,13 +658,9 @@ const Dragster: TDragster = function({
 
     /**
      * Adds a new placeholder in an empty region
-     *
-     * @method moveActions.addPlaceholderInRegion
-     * @private
-     * @param regionTarget {HTMLElement} a region drop target
      */
-    addPlaceholderInRegion: function(regionTarget) {
-      var placeholder = createPlaceholder();
+    addPlaceholderInRegion: (regionTarget: HTMLElement): void => {
+      const placeholder = createPlaceholder();
 
       regionTarget.appendChild(placeholder);
 
@@ -690,20 +671,16 @@ const Dragster: TDragster = function({
 
     /**
      * Adds a new placeholder in an empty region
-     *
-     * @method moveActions.addPlaceholderInRegion
-     * @private
-     * @param regionTarget {HTMLElement} a region drop target
      */
-    addPlaceholderInRegionBelowTargets: function(regionTarget) {
-      var elementsInRegion = [].slice.call(
-          regionTarget.getElementsByClassName(CLASS_DRAGGABLE)
-        ),
-        filteredElements = elementsInRegion.filter(function(elementInRegion) {
-          return elementInRegion.dataset.dragsterId === dragsterId;
-        }),
-        dropTarget = filteredElements[filteredElements.length - 1],
-        placeholder = createPlaceholder();
+    addPlaceholderInRegionBelowTargets: (regionTarget: HTMLElement): void => {
+      const elementsInRegion = [
+        ...regionTarget.getElementsByClassName(CLASS_DRAGGABLE),
+      ] as HTMLElement[];
+      const filteredElements = elementsInRegion.filter(
+        (elementInRegion) => elementInRegion.dataset.dragsterId === dragsterId
+      );
+      const dropTarget = filteredElements[filteredElements.length - 1];
+      const placeholder = createPlaceholder();
 
       placeholder.dataset.placeholderPosition = EVisualPosition.BOTTOM;
       removeElements(CLASS_PLACEHOLDER);
@@ -716,11 +693,8 @@ const Dragster: TDragster = function({
 
     /**
      * Removes all placeholders from regions
-     *
-     * @method moveActions.removePlaceholders
-     * @private
      */
-    removePlaceholders: function() {
+    removePlaceholders: (): void => {
       if (!replaceElements) {
         removeElements(CLASS_PLACEHOLDER);
       } else {
@@ -732,20 +706,17 @@ const Dragster: TDragster = function({
   dropActions = {
     /**
      * Moves element to the final position on drop
-     *
-     * @method dropActions.moveElement
-     * @private
-     * @param dragsterEvent {Object} dragster properties from event
-     * @param dropTarget {HTMLElement} region where dragged element will be placed after drop
-     * @param dropDraggableTarget {HTMLElement} final destination of dragged element
-     * @return {Object} updated event info
      */
-    moveElement: function(dragsterEvent, dropTarget, dropDraggableTarget) {
-      var dropTemp =
-          wrapDraggableElements === false
-            ? draggedElement
-            : createElementWrapper(),
-        placeholderPosition = dropTarget.dataset.placeholderPosition;
+    moveElement: (
+      dragsterEvent: IDragsterEventInfo,
+      dropTarget: HTMLElement,
+      dropDraggableTarget: HTMLElement
+    ): IDragsterEventInfo => {
+      const dropTemp =
+        wrapDraggableElements === false
+          ? draggedElement
+          : createElementWrapper();
+      const placeholderPosition = dropTarget.dataset.placeholderPosition;
 
       if (placeholderPosition === EVisualPosition.TOP) {
         insertBefore(dropDraggableTarget, dropTemp);
@@ -775,8 +746,13 @@ const Dragster: TDragster = function({
      * @param dropDraggableTarget {HTMLElement} final destination of dragged element
      * @return {Object} updated event info
      */
-    replaceElements: function(dragsterEvent, dropDraggableTarget) {
-      var dropTemp = document.getElementsByClassName(CLASS_TEMP_CONTAINER)[0];
+    replaceElements: (
+      dragsterEvent: IDragsterEventInfo,
+      dropDraggableTarget: HTMLElement
+    ): IDragsterEventInfo => {
+      const dropTemp = document.getElementsByClassName(
+        CLASS_TEMP_CONTAINER
+      )[0] as HTMLElement;
 
       dropTemp.innerHTML = draggedElement.innerHTML;
 
@@ -798,9 +774,13 @@ const Dragster: TDragster = function({
      * @param dropDraggableTarget {HTMLElement} final destination of dragged element
      * @return {Object} updated event info
      */
-    cloneElements: function(dragsterEvent, dropTarget, dropDraggableTarget) {
-      var dropTemp = draggedElement.cloneNode(true),
-        placeholderPosition = dropTarget.dataset.placeholderPosition;
+    cloneElements: (
+      dragsterEvent: IDragsterEventInfo,
+      dropTarget: HTMLElement,
+      dropDraggableTarget: HTMLElement
+    ): IDragsterEventInfo => {
+      const dropTemp = draggedElement.cloneNode(true);
+      const placeholderPosition = dropTarget.dataset.placeholderPosition;
 
       if (placeholderPosition === EVisualPosition.TOP) {
         insertBefore(dropDraggableTarget, dropTemp);
@@ -823,19 +803,19 @@ const Dragster: TDragster = function({
   window.addEventListener('resize', discoverWindowHeight, false);
 
   return {
-    update: () => {
+    update: (): void => {
       draggableElements = findDraggableElements();
 
       fnWrapDraggableElements(draggableElements);
       fnUpdateRegionsHeight();
       discoverWindowHeight();
     },
-    updateRegions: () => {
+    updateRegions: (): void => {
       regions = findRegionElements();
 
       addEventListenersToRegions(regions);
     },
-    destroy: () => {
+    destroy: (): void => {
       regions.forEach((region) => {
         region.classList.remove(CLASS_REGION);
 
