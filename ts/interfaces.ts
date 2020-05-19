@@ -6,10 +6,14 @@ export interface IDragsterOutput {
   destroy: () => void;
 }
 
+interface IDragsterEventListener extends EventListener {
+    (event: IDragsterEvent): void;
+}
+
 export interface IRegionEventHandlers {
-  mousedown: (event: IDragsterEvent) => void;
-  mousemove: (event: IDragsterEvent) => void;
-  mouseup: (event: IDragsterEvent) => void;
+  mousedown: IDragsterEventListener;
+  mousemove: IDragsterEventListener;
+  mouseup: IDragsterEventListener;
 }
 
 export interface IMoveActions {
@@ -67,7 +71,7 @@ export interface ITouchList extends TouchList {
 }
 
 export interface IMouseTouchEvent extends MouseEvent, TouchEvent {
-  changedTouches: ITouchList;
+  readonly changedTouches: ITouchList;
 }
 
 export interface IDragsterEvent extends IMouseTouchEvent {
