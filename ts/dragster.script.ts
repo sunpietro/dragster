@@ -7,7 +7,7 @@ import {
 } from './interfaces';
 import { TDragster } from './types';
 
-const dummyCallback = () => {};
+const noop = () => {};
 const CLASS_DRAGGING = 'is-dragging';
 const CLASS_DRAGOVER = 'is-drag-over';
 const CLASS_DRAGGABLE = 'dragster-draggable';
@@ -27,13 +27,13 @@ export const Dragster: TDragster = function({
   replaceElements = false,
   updateRegionsHeight = true,
   minimumRegionHeight = 60,
-  onBeforeDragStart = dummyCallback,
-  onAfterDragStart = dummyCallback,
-  onBeforeDragMove = dummyCallback,
-  onAfterDragMove = dummyCallback,
-  onBeforeDragEnd = dummyCallback,
-  onAfterDragEnd = dummyCallback,
-  onAfterDragDrop = dummyCallback,
+  onBeforeDragStart = noop,
+  onAfterDragStart = noop,
+  onBeforeDragMove = noop,
+  onAfterDragMove = noop,
+  onBeforeDragEnd = noop,
+  onAfterDragEnd = noop,
+  onAfterDragDrop = noop,
   scrollWindowOnDrag = false,
   cloneElements = false,
   wrapDraggableElements = true,
