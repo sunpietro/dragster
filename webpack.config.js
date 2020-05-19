@@ -1,23 +1,24 @@
 const path = require('path');
+const root = path.resolve(__dirname, '.');
 
 module.exports = {
-  entry: './ts/dragster.script.ts',
   mode: 'development',
+  entry: './ts/dragster.script.ts',
+  output: {
+    filename: 'dragster.umd.js',
+    path: path.join(root, 'dist'),
+    libraryTarget: 'umd',
+  },
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-  },
-  output: {
-    filename: 'dragster.umd.js',
-    libraryTarget: 'umd',
-    path: path.resolve(__dirname, '.'),
+    extensions: ['.ts', '.js'],
   },
 };
