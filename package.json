@@ -7,7 +7,9 @@
     "generate-modules": "node module-generator.js",
     "minify": "uglifyjs dragster.js --mangle --compress --comments --output dragster.min.js",
     "gzip": "gzip -c dragster.min.js > dragster.min.js.gz",
-    "deploy": "npm run generate-modules && npm run minify && npm run gzip"
+    "deploy": "npm run generate-modules && npm run minify && npm run gzip",
+    "build": "webpack",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
