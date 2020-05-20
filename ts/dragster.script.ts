@@ -3,12 +3,21 @@ import {
   IDragsterEventInfo,
   IMouseTouchEvent,
   IDragsterEvent,
-  ITouchList,
   IRegionEventHandlers,
   IMoveActions,
   IDraggedElement,
 } from './interfaces';
 import { TDragster } from './types';
+import {
+  moveElementOnDrop,
+  cloneElementsOnDrop,
+  replaceElementsOnDrop,
+} from './actions/drop';
+import {
+  addPlaceholderOnTargetOnMove,
+  addPlaceholderInRegionOnMove,
+  addPlaceholderInRegionBelowTargetsOnMove,
+} from './actions/move';
 
 const noop = () => {};
 const CLASS_DRAGGING = 'is-dragging';
@@ -332,7 +341,20 @@ export const Dragster: TDragster = function({
       );
     });
   };
-  let visiblePlaceholder = {
+  /**
+   * Removes all placeholders from regions
+   */
+  const removePlaceholders = (): void => {
+    if (!replaceElements) {
+      removeElements(CLASS_PLACEHOLDER);
+    } else {
+      cleanReplacables();
+    }
+  };
+  let visiblePlaceholder: {
+    top: boolean;
+    bottom: boolean;
+  } = {
     top: false,
     bottom: false,
   };
@@ -519,20 +541,38 @@ export const Dragster: TDragster = function({
         !hasTargetPlaceholders;
 
       if (cannotBeDropped) {
-        moveActions.removePlaceholders();
+        removePlaceholders();
       } else if (isNotDragOnlyDropTarget) {
-        moveActions.removePlaceholders();
-        moveActions.addPlaceholderOnTarget(
+        removePlaceholders();
+        cleanReplacables();
+        dragsterEventInfo = addPlaceholderOnTargetOnMove({
           dropTarget,
           elementPositionY,
-          pageYOffset
-        );
+          pageYOffset,
+          placeholder: createPlaceholder(),
+          shouldReplaceElements: replaceElements,
+          dragsterEventInfo,
+          removePlaceholders,
+          cssReplacableClass: CLASS_REPLACABLE,
+          insertBefore,
+          visiblePlaceholder,
+        });
       } else if (isEmptyDropTargetWithoutPlaceholder) {
-        moveActions.removePlaceholders();
-        moveActions.addPlaceholderInRegion(unknownTarget);
+        removePlaceholders();
+        dragsterEventInfo = addPlaceholderInRegionOnMove({
+          target: unknownTarget,
+          placeholder: createPlaceholder(),
+          dragsterEventInfo,
+        });
       } else if (isNotEmptyDropTargetWithoutPlaceholder) {
-        moveActions.removePlaceholders();
-        moveActions.addPlaceholderInRegionBelowTargets(unknownTarget);
+        removePlaceholders();
+        dragsterEventInfo = addPlaceholderInRegionBelowTargetsOnMove({
+          target: unknownTarget,
+          placeholder: createPlaceholder(),
+          dragsterEventInfo,
+          cssDraggableClass: CLASS_DRAGGABLE,
+          dragsterId,
+        });
       }
 
       if (scrollWindowOnDrag) {
@@ -592,26 +632,45 @@ export const Dragster: TDragster = function({
 
       if (draggedElement !== dropDraggableTarget) {
         if (!replaceElements && !canBeCloned) {
-          event.dragster = dropActions.moveElement(
-            event.dragster,
+          event.dragster = moveElementOnDrop({
+            shouldWrapElements: wrapDraggableElements === true,
+            dragsterEvent: event.dragster,
+            insertBefore,
+            insertAfter,
+            draggedElement,
             dropTarget,
-            dropDraggableTarget
-          );
+            dropDraggableTarget,
+            dropTemp:
+              wrapDraggableElements === false
+                ? draggedElement
+                : createElementWrapper(),
+          });
 
           onAfterDragDrop(event);
         } else if (replaceElements && !canBeCloned) {
-          event.dragster = dropActions.replaceElements(
-            event.dragster,
-            dropDraggableTarget
-          );
+          event.dragster = replaceElementsOnDrop({
+            dragsterEvent: event.dragster,
+            dropDraggableTarget,
+            dropTemp: document.getElementsByClassName(
+              CLASS_TEMP_CONTAINER
+            )[0] as HTMLElement,
+            draggedElement,
+          });
 
           onAfterDragDrop(event);
         } else if (!replaceElements && canBeCloned) {
-          event.dragster = dropActions.cloneElements(
-            event.dragster,
+          event.dragster = cloneElementsOnDrop({
+            dragsterEvent: event.dragster,
             dropTarget,
-            dropDraggableTarget
-          );
+            insertAfterTarget: (element) => {
+              insertAfter(dropDraggableTarget as HTMLElement, element);
+            },
+            insertBeforeTarget: (element) => {
+              insertBefore(dropDraggableTarget as HTMLElement, element);
+            },
+            draggedElement,
+            cleanWorkspace: (element) => cleanWorkspace({ element, regions }),
+          });
 
           onAfterDragDrop(event);
         }
