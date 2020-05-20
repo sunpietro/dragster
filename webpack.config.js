@@ -2,18 +2,18 @@ const path = require('path');
 
 module.exports = {
   entry: './ts/dragster.script.ts',
-  mode: 'development',
+  mode: 'production',
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.ts', '.ts', '.js'],
   },
   output: {
     filename: 'dragster.umd.js',

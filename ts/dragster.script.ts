@@ -3,9 +3,18 @@ import {
   IDragsterEventInfo,
   IMouseTouchEvent,
   IDragsterEvent,
-  ITouchList,
 } from './interfaces';
 import { TDragster } from './types';
+import {
+  moveElementOnDrop,
+  cloneElementsOnDrop,
+  replaceElementsOnDrop,
+} from './actions/drop';
+import {
+  addPlaceholderOnTargetOnMove,
+  addPlaceholderInRegionOnMove,
+  addPlaceholderInRegionBelowTargetsOnMove,
+} from './actions/move';
 
 const dummyCallback = () => {};
 const CLASS_DRAGGING = 'is-dragging';
@@ -324,7 +333,20 @@ export const Dragster: TDragster = function({
       );
     });
   };
-  let visiblePlaceholder = {
+  /**
+   * Removes all placeholders from regions
+   */
+  const removePlaceholders = (): void => {
+    if (!replaceElements) {
+      removeElements(CLASS_PLACEHOLDER);
+    } else {
+      cleanReplacables();
+    }
+  };
+  let visiblePlaceholder: {
+    top: boolean;
+    bottom: boolean;
+  } = {
     top: false,
     bottom: false,
   };
@@ -455,7 +477,10 @@ export const Dragster: TDragster = function({
         clientX,
         clientY
       ) as HTMLElement;
-      const dropTarget = getElement(unknownTarget, isDraggableCallback);
+      const dropTarget = getElement(
+        unknownTarget,
+        isDraggableCallback
+      ) as HTMLElement;
       const top = shadowElementUnderMouse
         ? clientY + shadowElementPositionYDiff
         : clientY;
@@ -506,20 +531,38 @@ export const Dragster: TDragster = function({
         !hasTargetPlaceholders;
 
       if (cannotBeDropped) {
-        moveActions.removePlaceholders();
+        removePlaceholders();
       } else if (isNotDragOnlyDropTarget) {
-        moveActions.removePlaceholders();
-        moveActions.addPlaceholderOnTarget(
+        removePlaceholders();
+        cleanReplacables();
+        dragsterEventInfo = addPlaceholderOnTargetOnMove({
           dropTarget,
           elementPositionY,
-          pageYOffset
-        );
+          pageYOffset,
+          placeholder: createPlaceholder(),
+          shouldReplaceElements: replaceElements,
+          dragsterEventInfo,
+          removePlaceholders,
+          cssReplacableClass: CLASS_REPLACABLE,
+          insertBefore,
+          visiblePlaceholder,
+        });
       } else if (isEmptyDropTargetWithoutPlaceholder) {
-        moveActions.removePlaceholders();
-        moveActions.addPlaceholderInRegion(unknownTarget);
+        removePlaceholders();
+        dragsterEventInfo = addPlaceholderInRegionOnMove({
+          target: unknownTarget,
+          placeholder: createPlaceholder(),
+          dragsterEventInfo,
+        });
       } else if (isNotEmptyDropTargetWithoutPlaceholder) {
-        moveActions.removePlaceholders();
-        moveActions.addPlaceholderInRegionBelowTargets(unknownTarget);
+        removePlaceholders();
+        dragsterEventInfo = addPlaceholderInRegionBelowTargetsOnMove({
+          target: unknownTarget,
+          placeholder: createPlaceholder(),
+          dragsterEventInfo,
+          cssDraggableClass: CLASS_DRAGGABLE,
+          dragsterId,
+        });
       }
 
       if (scrollWindowOnDrag) {
@@ -579,26 +622,45 @@ export const Dragster: TDragster = function({
 
       if (draggedElement !== dropDraggableTarget) {
         if (!replaceElements && !canBeCloned) {
-          event.dragster = dropActions.moveElement(
-            event.dragster,
+          event.dragster = moveElementOnDrop({
+            shouldWrapElements: wrapDraggableElements === true,
+            dragsterEvent: event.dragster,
+            insertBefore,
+            insertAfter,
+            draggedElement,
             dropTarget,
-            dropDraggableTarget
-          );
+            dropDraggableTarget,
+            dropTemp:
+              wrapDraggableElements === false
+                ? draggedElement
+                : createElementWrapper(),
+          });
 
           onAfterDragDrop(event);
         } else if (replaceElements && !canBeCloned) {
-          event.dragster = dropActions.replaceElements(
-            event.dragster,
-            dropDraggableTarget
-          );
+          event.dragster = replaceElementsOnDrop({
+            dragsterEvent: event.dragster,
+            dropDraggableTarget,
+            dropTemp: document.getElementsByClassName(
+              CLASS_TEMP_CONTAINER
+            )[0] as HTMLElement,
+            draggedElement,
+          });
 
           onAfterDragDrop(event);
         } else if (!replaceElements && canBeCloned) {
-          event.dragster = dropActions.cloneElements(
-            event.dragster,
+          event.dragster = cloneElementsOnDrop({
+            dragsterEvent: event.dragster,
             dropTarget,
-            dropDraggableTarget
-          );
+            insertAfterTarget: (element) => {
+              insertAfter(dropDraggableTarget as HTMLElement, element);
+            },
+            insertBeforeTarget: (element) => {
+              insertBefore(dropDraggableTarget as HTMLElement, element);
+            },
+            draggedElement,
+            cleanWorkspace: (element) => cleanWorkspace({ element, regions }),
+          });
 
           onAfterDragDrop(event);
         }
@@ -700,100 +762,6 @@ export const Dragster: TDragster = function({
       } else {
         cleanReplacables();
       }
-    },
-  };
-
-  dropActions = {
-    /**
-     * Moves element to the final position on drop
-     */
-    moveElement: (
-      dragsterEvent: IDragsterEventInfo,
-      dropTarget: HTMLElement,
-      dropDraggableTarget: HTMLElement
-    ): IDragsterEventInfo => {
-      const dropTemp =
-        wrapDraggableElements === false
-          ? draggedElement
-          : createElementWrapper();
-      const placeholderPosition = dropTarget.dataset.placeholderPosition;
-
-      if (placeholderPosition === EVisualPosition.TOP) {
-        insertBefore(dropDraggableTarget, dropTemp);
-      } else {
-        if (wrapDraggableElements === false) {
-          insertAfter(dropTemp, dropDraggableTarget);
-        } else {
-          insertAfter(dropDraggableTarget, dropTemp);
-        }
-      }
-
-      if (draggedElement.firstChild && wrapDraggableElements === true) {
-        dropTemp.appendChild(draggedElement.firstChild);
-      }
-
-      dragsterEvent.dropped = dropTemp;
-
-      return dragsterEvent;
-    },
-
-    /**
-     * Replaces element with target element on drop
-     *
-     * @method dropActions.replaceElements
-     * @private
-     * @param dragsterEvent {Object} dragster properties from event
-     * @param dropDraggableTarget {HTMLElement} final destination of dragged element
-     * @return {Object} updated event info
-     */
-    replaceElements: (
-      dragsterEvent: IDragsterEventInfo,
-      dropDraggableTarget: HTMLElement
-    ): IDragsterEventInfo => {
-      const dropTemp = document.getElementsByClassName(
-        CLASS_TEMP_CONTAINER
-      )[0] as HTMLElement;
-
-      dropTemp.innerHTML = draggedElement.innerHTML;
-
-      draggedElement.innerHTML = dropDraggableTarget.innerHTML;
-      dropDraggableTarget.innerHTML = dropTemp.innerHTML;
-      dropTemp.innerHTML = '';
-      dragsterEvent.dropped = dropTemp;
-
-      return dragsterEvent;
-    },
-
-    /**
-     * Clones element to the final position on drop
-     *
-     * @method dropActions.cloneElements
-     * @private
-     * @param dragsterEvent {Object} dragster properties from event
-     * @param dropTarget {HTMLElement} region where dragged element will be placed after drop
-     * @param dropDraggableTarget {HTMLElement} final destination of dragged element
-     * @return {Object} updated event info
-     */
-    cloneElements: (
-      dragsterEvent: IDragsterEventInfo,
-      dropTarget: HTMLElement,
-      dropDraggableTarget: HTMLElement
-    ): IDragsterEventInfo => {
-      const dropTemp = draggedElement.cloneNode(true);
-      const placeholderPosition = dropTarget.dataset.placeholderPosition;
-
-      if (placeholderPosition === EVisualPosition.TOP) {
-        insertBefore(dropDraggableTarget, dropTemp);
-      } else {
-        insertAfter(dropDraggableTarget, dropTemp);
-      }
-
-      cleanWorkspace({ element: dropTemp, regions });
-
-      dragsterEvent.clonedFrom = draggedElement;
-      dragsterEvent.clonedTo = dropTemp;
-
-      return dragsterEvent;
     },
   };
 
