@@ -6,6 +6,44 @@ export interface IDragsterOutput {
   destroy: () => void;
 }
 
+interface IDragsterEventListener extends EventListener {
+    (event: IDragsterEvent): void;
+}
+
+export interface IRegionEventHandlers {
+  mousedown: IDragsterEventListener;
+  mousemove: IDragsterEventListener;
+  mouseup: IDragsterEventListener;
+}
+
+export interface IMoveActions {
+  addPlaceholderOnTarget: (
+    dropTarget: HTMLElement,
+    elementPositionY: number,
+    pageYOffset: number
+  ) => void;
+  addPlaceholderInRegion: (regionTarget: HTMLElement) => void;
+  addPlaceholderInRegionBelowTargets: (regionTarget: HTMLElement) => void;
+  removePlaceholders: () => void;
+}
+
+export interface IDraggedElement {
+  moveElement: (
+    dragsterEvent: IDragsterEventInfo,
+    dropTarget: HTMLElement,
+    dropDraggableTarget: HTMLElement
+  ) => IDragsterEventInfo;
+  replaceElements: (
+    dragsterEvent: IDragsterEventInfo,
+    dropDraggableTarget: HTMLElement
+  ) => IDragsterEventInfo;
+  cloneElements: (
+    dragsterEvent: IDragsterEventInfo,
+    dropTarget: HTMLElement,
+    dropDraggableTarget: HTMLElement
+  ) => IDragsterEventInfo;
+}
+
 export interface IDragsterInput {
   elementSelector?: string;
   regionSelector?: string;
@@ -33,7 +71,7 @@ export interface ITouchList extends TouchList {
 }
 
 export interface IMouseTouchEvent extends MouseEvent, TouchEvent {
-  changedTouches: ITouchList;
+  readonly changedTouches: ITouchList;
 }
 
 export interface IDragsterEvent extends IMouseTouchEvent {
