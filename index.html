@@ -1,63 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>Dragster.js Demo</title>
-    <link rel="stylesheet" href="dragster.style.css">
-</head>
-<body>
-    <svg
-        xmlns:svg="http://www.w3.org/2000/svg"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        style="position: absolute; width: 0; height: 0;">
-        <defs>
-            <symbol id="logo" viewBox="0 0 300 300">
-                <style>
-                    .bg,
-                    .star,
-                    .star-hole {
-                        fill-rule: nonzero;
-                        stroke-linecap: round;
-                        stroke-linejoin: round;
-                    }
-                    .letter-n,
-                    .letter-p,
-                    .letter-p-hole,
-                    .letter-n-hole {
-                        fill-rule: evenodd;
-                        stroke-width: 2px;
-                    }
-                    .star,
-                    .star-hole {
-                        stroke-width: 2px;
-                    }
-                    .star,
-                    .letter-n,
-                    .letter-p {
-                        fill: #ffffff;
-                    }
-                    .bg,
-                    .star-hole,
-                    .letter-p-hole,
-                    .letter-n-hole {
-                        fill: #b24210;
-                    }
-                </style>
-                <g id="container-logo">
-                    <rect width="300" height="300" x="0" y="0" class="bg"/>
-                    <g id="container-letter-n">
-                        <rect width="260" height="110" x="20" y="170" class="letter-n"/>
-                        <rect width="220" height="90" x="40" y="191" class="letter-n-hole"/>
-                    </g>
-                    <g id="container-letter-p">
-                        <path d="M 150 170 L 150 20 L 280 20 L 280 100 L 170 100 L 170 170 L 150 170 z" class="letter-p"/>
-                        <rect width="90" height="40" x="170" y="40" class="letter-p-hole"/>
-                    </g>
-                    <g id="container-star">
-                        <path d="
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
+        <title>Dragster.js Demo</title>
+        <link rel="stylesheet" href="dragster.style.css" />
+    </head>
+    <body>
+        <svg
+            xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            style="position: absolute; width: 0; height: 0"
+        >
+            <defs>
+                <symbol id="logo" viewBox="0 0 300 300">
+                    <style>
+                        .bg,
+                        .star,
+                        .star-hole {
+                            fill-rule: nonzero;
+                            stroke-linecap: round;
+                            stroke-linejoin: round;
+                        }
+                        .letter-n,
+                        .letter-p,
+                        .letter-p-hole,
+                        .letter-n-hole {
+                            fill-rule: evenodd;
+                            stroke-width: 2px;
+                        }
+                        .star,
+                        .star-hole {
+                            stroke-width: 2px;
+                        }
+                        .star,
+                        .letter-n,
+                        .letter-p {
+                            fill: #ffffff;
+                        }
+                        .bg,
+                        .star-hole,
+                        .letter-p-hole,
+                        .letter-n-hole {
+                            fill: #b24210;
+                        }
+                    </style>
+                    <g id="container-logo">
+                        <rect width="300" height="300" x="0" y="0" class="bg" />
+                        <g id="container-letter-n">
+                            <rect width="260" height="110" x="20" y="170" class="letter-n" />
+                            <rect width="220" height="90" x="40" y="191" class="letter-n-hole" />
+                        </g>
+                        <g id="container-letter-p">
+                            <path
+                                d="M 150 170 L 150 20 L 280 20 L 280 100 L 170 100 L 170 170 L 150 170 z"
+                                class="letter-p"
+                            />
+                            <rect width="90" height="40" x="170" y="40" class="letter-p-hole" />
+                        </g>
+                        <g id="container-star">
+                            <path
+                                d="
                             M 67.553 95.000
                             L 96.942 110.451
                             L 91.329 77.725
@@ -69,95 +74,104 @@
                             L 43.777 77.725
                             L 38.164 110.451
                             L 67.553 95.000 z
-                          " class="star" transform-origin="50%,50%"/>
-                        <circle cx="67.553" cy="70" r="20" class="star-hole" />
+                          "
+                                class="star"
+                                transform-origin="50%,50%"
+                            />
+                            <circle cx="67.553" cy="70" r="20" class="star-hole" />
+                        </g>
                     </g>
-                </g>
-            </symbol>
-        </defs>
-    </svg>
-    <h1>Dragster.js - Basic example demo</h1>
-    <p>The blocks below can be dragged and dropped in any region except the last one, which is a drag-only region. The elements from the last region will be copied when dropping on any droppable region.</p>
-    <div class="regions" id="container-0">
-        <div class="dragster-region">
-            <div class="dragster-block">1.1</div>
-            <div class="dragster-block">
-                <h3>Dragster Block 1.2</h3>
-                <svg><use xlink:href="#logo"></use></svg>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                </symbol>
+            </defs>
+        </svg>
+        <h1>Dragster.js - Basic example demo</h1>
+        <p>
+            The blocks below can be dragged and dropped in any region except the last one, which is a drag-only region.
+            The elements from the last region will be copied when dropping on any droppable region.
+        </p>
+        <div class="regions" id="container-0">
+            <div class="dragster-region">
+                <div class="dragster-block">1.1</div>
+                <div class="dragster-block">
+                    <h3>Dragster Block 1.2</h3>
+                    <svg><use xlink:href="#logo"></use></svg>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                </div>
+                <div class="dragster-block">1.3</div>
+                <div class="dragster-block">1.4</div>
             </div>
-            <div class="dragster-block">1.3</div>
-            <div class="dragster-block">1.4</div>
-        </div>
-        <div class="dragster-region">
-            <div class="dragster-block">
-                <h3>Dragster Block 2.1</h3>
-                <svg><use xlink:href="#logo"></use></svg>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            <div class="dragster-region">
+                <div class="dragster-block">
+                    <h3>Dragster Block 2.1</h3>
+                    <svg><use xlink:href="#logo"></use></svg>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                </div>
+                <div class="dragster-block">2.2</div>
+                <div class="dragster-block">2.3</div>
+                <div class="dragster-block">2.4</div>
             </div>
-            <div class="dragster-block">2.2</div>
-            <div class="dragster-block">2.3</div>
-            <div class="dragster-block">2.4</div>
-        </div>
-        <div class="dragster-region dragster-region--drag-only">
-            <p>Elements cannot be dropped here. They are copied from here.</p>
-            <div class="dragster-block">3.1</div>
-            <div class="dragster-block">3.2</div>
-            <div class="dragster-block">3.3</div>
-        </div>
-    </div>
-    <h2>Dragster - draggable elements inside a draggable element demo</h2>
-    <p>The example below is a bit more advanced. It shows the possibility of implementing a drag'n'drop functionality inside a draggable element.</p>
-    <div class="regions" id="container-1">
-        <div class="dragster-region">
-            <div class="dragster-block">1.1</div>
-            <div class="dragster-block">
-                <h3>Dragster Block 1.2</h3>
-                <svg><use xlink:href="#logo"></use></svg>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            <div class="dragster-region dragster-region--drag-only">
+                <p>Elements cannot be dropped here. They are copied from here.</p>
+                <div class="dragster-block">3.1</div>
+                <div class="dragster-block">3.2</div>
+                <div class="dragster-block">3.3</div>
             </div>
-            <div class="dragster-block">1.3</div>
-            <div class="dragster-block">1.4</div>
         </div>
-        <div class="dragster-region">
-            <div class="dragster-block">Dragster Block 2.1</div>
-            <div class="dragster-block">
-                <h3>2.2 Second region - independent</h3>
-                <div class="regions" id="container-2">
-                    <div class="dragster-region">
-                        <div class="dragster-block">1.1</div>
-                        <div class="dragster-block">Dragster Block 1.2</div>
-                        <div class="dragster-block">1.3</div>
-                        <div class="dragster-block">1.4</div>
-                    </div>
-                    <div class="dragster-region">
-                        <div class="dragster-block">Dragster Block 2.1</div>
-                        <div class="dragster-block">2.2</div>
-                        <div class="dragster-block">2.3</div>
-                        <div class="dragster-block">2.4</div>
+        <h2>Dragster - draggable elements inside a draggable element demo</h2>
+        <p>
+            The example below is a bit more advanced. It shows the possibility of implementing a drag'n'drop
+            functionality inside a draggable element.
+        </p>
+        <div class="regions" id="container-1">
+            <div class="dragster-region">
+                <div class="dragster-block">4.1</div>
+                <div class="dragster-block">
+                    <h3>Dragster Block 4.2</h3>
+                    <svg><use xlink:href="#logo"></use></svg>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                </div>
+                <div class="dragster-block">4.3</div>
+                <div class="dragster-block">4.4</div>
+            </div>
+            <div class="dragster-region">
+                <div class="dragster-block">Dragster Block 5.1</div>
+                <div class="dragster-block">
+                    <h3>5.2 Second region - independent</h3>
+                    <div class="regions" id="container-2">
+                        <div class="dragster-region">
+                            <div class="dragster-block">6.1</div>
+                            <div class="dragster-block">Dragster Block 6.2</div>
+                            <div class="dragster-block">6.3</div>
+                            <div class="dragster-block">6.4</div>
+                        </div>
+                        <div class="dragster-region">
+                            <div class="dragster-block">Dragster Block 7.1</div>
+                            <div class="dragster-block">7.2</div>
+                            <div class="dragster-block">7.3</div>
+                            <div class="dragster-block">7.4</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <script src="dragster.js"></script>
-    <script>
-        var d0 = Dragster({
-            cloneElements: true,
-            regionSelector: '#container-0 > .dragster-region',
-            elementSelector: '#container-0 > .dragster-region > .dragster-block',
-        });
+        <script src="dragster.js"></script>
+        <script>
+            var d0 = Dragster({
+                cloneElements: true,
+                regionSelector: '#container-0 > .dragster-region',
+                elementSelector: '#container-0 > .dragster-region > .dragster-block',
+            });
 
-        var d1 = Dragster({
-            regionSelector: '#container-1 > .dragster-region',
-            elementSelector: '#container-1 > .dragster-region > .dragster-block',
-        });
+            var d1 = Dragster({
+                regionSelector: '#container-1 > .dragster-region',
+                elementSelector: '#container-1 > .dragster-region > .dragster-block',
+            });
 
-        var d2 = Dragster({
-            cloneElements: false,
-            regionSelector: '#container-2 > .dragster-region',
-            elementSelector: '#container-2 > .dragster-region > .dragster-block',
-        });
-    </script>
-</body>
+            var d2 = Dragster({
+                cloneElements: false,
+                regionSelector: '#container-2 > .dragster-region',
+                elementSelector: '#container-2 > .dragster-region > .dragster-block',
+            });
+        </script>
+    </body>
 </html>

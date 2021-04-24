@@ -1,23 +1,25 @@
 {
-    "extends": ["eslint:recommended"],
+    "extends": ["eslint:recommended", "plugin:cypress/recommended"],
     "env": {
         "browser": true,
         "node": true,
-        "es6": true
+        "es6": true,
+        "cypress/globals": true
     },
     "parserOptions": {
         "ecmaVersion": 2018, // Allows for the parsing of modern ECMAScript features
         "sourceType": "module" // Allows for the use of imports
     },
+    "plugins": ["cypress"],
     "rules": {
         "eqeqeq": ["error", "always"],
         "indent": ["error", 4],
         "linebreak-style": ["error", "unix"],
         "quotes": ["error", "single"],
         "semi": ["error", "always"],
-        "comma-dangle": ["error", "always"],
         "no-cond-assign": ["error", "always"],
         "no-console": "off",
         "brace-style": "error",
+        "jest/expect-expect": "off"
     }
 }
