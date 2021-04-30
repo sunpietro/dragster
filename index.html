@@ -6,6 +6,23 @@
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <title>Dragster.js Demo</title>
         <link rel="stylesheet" href="dragster.style.css" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/img/favicons/apple-icon-57x57.png" />
+        <link rel="apple-touch-icon" sizes="60x60" href="/img/favicons/apple-icon-60x60.png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/img/favicons/apple-icon-72x72.png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/img/favicons/apple-icon-76x76.png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/img/favicons/apple-icon-114x114.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/img/favicons/apple-icon-120x120.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/img/favicons/apple-icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/img/favicons/apple-icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-icon-180x180.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/img/favicons/android-icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/img/favicons/favicon-96x96.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png" />
+        <link rel="manifest" href="/img/favicons/manifest.json" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
+        <meta name="msapplication-TileImage" content="/img/favicons/ms-icon-144x144.png" />
+        <meta name="theme-color" content="#ffffff" />
     </head>
     <body>
         <svg
@@ -155,6 +172,24 @@
                 </div>
             </div>
         </div>
+        <h2>Dragster - Replace elements demo</h2>
+        <p>In this example you can see replacing elements in action</p>
+        <div class="regions" id="container-3">
+            <div class="dragster-region">
+                <div class="dragster-block">8.1</div>
+                <div class="dragster-block">
+                    <h3>Dragster Block 8.2</h3>
+                    <svg><use xlink:href="#logo"></use></svg>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                </div>
+                <div class="dragster-block">8.3</div>
+                <div class="dragster-block">8.4</div>
+            </div>
+            <div class="dragster-region">
+                <div class="dragster-block">Dragster Block 9.1</div>
+                <div class="dragster-block">9.2</div>
+            </div>
+        </div>
         <script src="dragster-script.js"></script>
         <script>
             (function () {
@@ -174,6 +209,12 @@
                     cloneElements: false,
                     regionSelector: '#container-2 > .dragster-region',
                     elementSelector: '#container-2 > .dragster-region > .dragster-block',
+                });
+
+                const d3 = Dragster({
+                    replaceElements: true,
+                    regionSelector: '#container-3 > .dragster-region',
+                    elementSelector: '#container-3 > .dragster-region > .dragster-block',
                 });
             })();
         </script>

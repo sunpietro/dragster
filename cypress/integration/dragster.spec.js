@@ -1,5 +1,7 @@
 /// <reference types="Cypress" />
 
+const DRAGGABLE_SELECTOR = '.dragster-draggable';
+
 describe('Dragster.js', () => {
     beforeEach(() => {
         cy.visit('http://127.0.0.1:8370');
@@ -19,7 +21,10 @@ describe('Dragster.js', () => {
 
             cy.wrap($draggable).trigger('mouseup');
 
-            cy.findByText(draggableSelector).parent().next().should('contain.text', 'Dragster Block 2.1');
+            cy.findByText(draggableSelector)
+                .parent(DRAGGABLE_SELECTOR)
+                .next()
+                .should('contain.text', 'Dragster Block 2.1');
         });
     });
 
@@ -38,7 +43,7 @@ describe('Dragster.js', () => {
 
             cy.findByTestId('test-drop-copy')
                 .findByText(draggableSelector)
-                .parent()
+                .parent(DRAGGABLE_SELECTOR)
                 .next()
                 .should('contain.text', 'Dragster Block 2.1');
 
@@ -46,11 +51,25 @@ describe('Dragster.js', () => {
         });
     });
 
-    // it('updates elements order correctly after dropping it in the region', () => {});
+    it('replaces elements on drop', () => {
+        const draggableSelector = 'Dragster Block 8.2';
+        const droppableSelector = 'Dragster Block 9.1';
 
-    // it('prevents dropping parent elements in nested regions unless it is specified differently', () => {});
+        cy.findByText(draggableSelector).then(($draggable) => {
+            cy.wrap($draggable).trigger('mousedown');
 
-    // it('prevents dropping nested draggable elements on a parent draggable region', () => {});
+            cy.wrap($draggable).trigger('mousemove', 450, 450, {
+                force: true,
+            });
 
-    // it('replaces elements on drop', () => {});
+            cy.get('.dragster-drop-placeholder').should('not.exist');
+
+            cy.wrap($draggable).trigger('mouseup');
+
+            cy.get('#container-3 > .dragster-region:nth-of-type(1)').should('contain.text', droppableSelector);
+            cy.get('#container-3 > .dragster-region:nth-of-type(2)').should('contain.text', draggableSelector);
+            cy.findAllByText(draggableSelector).should('have.length', 1);
+            cy.findAllByText(droppableSelector).should('have.length', 1);
+        });
+    });
 });
