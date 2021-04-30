@@ -1,38 +1,50 @@
 /// <reference types="Cypress" />
 
 describe('Dragster.js', () => {
-    before(() => {
+    beforeEach(() => {
         cy.visit('http://127.0.0.1:8370');
     });
 
     it('drags and drops an element from one region to another', () => {
-        const draggableSelector = '#container-0 .dragster-region:nth-child(1) .dragster-draggable:nth-child(1)';
-        const droppableSelector = '#container-0 .dragster-region:nth-child(2) .dragster-draggable:nth-child(1)';
+        const draggableSelector = '1.1';
 
-        cy.get(draggableSelector).contains('1.1');
-        cy.get(droppableSelector).contains('Dragster Block 2.1');
+        cy.findByText(draggableSelector).then(($draggable) => {
+            cy.wrap($draggable).trigger('mousedown');
 
-        // cy.get(draggableSelector).then(($draggable) => {
-        cy.findByText('1.1').then(($draggable) => {
-            cy.get(droppableSelector).then(($droppable) => {
-                const droppable = $droppable[0];
-                const coords = droppable.getBoundingClientRect();
-
-                cy.wrap($draggable).trigger('mousedown');
-                cy.wrap($draggable).trigger('mousemove', coords.x, coords.y, { force: true });
-
-                cy.get('.dragster-drop-placeholder').should('exist');
-                cy.get('.dragster-drop-placeholder').parent().next().should('contain.text', '2.2');
-
-                cy.wrap($draggable).trigger('mouseup', coords.x, coords.y, { force: true });
-
-                cy.findByText('1.1').should('exist');
-                cy.findByText('1.1').parent().next().should('contain.text', '2.2');
+            cy.wrap($draggable).trigger('mousemove', 300, 10, {
+                force: true,
             });
+
+            cy.get('.dragster-drop-placeholder').should('exist');
+
+            cy.wrap($draggable).trigger('mouseup');
+
+            cy.findByText(draggableSelector).parent().next().should('contain.text', 'Dragster Block 2.1');
         });
     });
 
-    // it('copies an element while dragging it from read-only region', () => {});
+    it('copies an element while dragging it from read-only region', () => {
+        const draggableSelector = '3.1';
+
+        cy.findByText(draggableSelector).then(($draggable) => {
+            cy.wrap($draggable).trigger('mousedown');
+            cy.wrap($draggable).trigger('mousemove', -200, 0, {
+                force: true,
+            });
+
+            cy.get('.dragster-drop-placeholder').should('exist');
+
+            cy.wrap($draggable).trigger('mouseup');
+
+            cy.findByTestId('test-drop-copy')
+                .findByText(draggableSelector)
+                .parent()
+                .next()
+                .should('contain.text', 'Dragster Block 2.1');
+
+            cy.findAllByText(draggableSelector).should('have.length', 2);
+        });
+    });
 
     // it('updates elements order correctly after dropping it in the region', () => {});
 

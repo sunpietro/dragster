@@ -20,6 +20,8 @@
         "no-cond-assign": ["error", "always"],
         "no-console": "off",
         "brace-style": "error",
-        "jest/expect-expect": "off"
+        "jest/expect-expect": "off",
+        "cypress/no-assigning-return-values": "off",
+        "cypress/no-async-tests": "off"
     }
 }

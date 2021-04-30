@@ -1,7 +1,7 @@
 /* eslint-env browser */
 
 // eslint-disable-next-line
-var Dragster = function (params) {
+const Dragster = function (params = {}) {
     var PREFIX_CLASS_DRAGSTER = 'dragster-',
         CLASS_DRAGGING = 'is-dragging',
         CLASS_DRAGOVER = 'is-drag-over',
@@ -174,6 +174,8 @@ var Dragster = function (params) {
             finalParams[key] = params[key];
         }
     }
+
+    finalParams = { ...finalParams, ...params };
 
     /*
      * Find all draggable elements on the page

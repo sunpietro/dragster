@@ -11,7 +11,10 @@
  * Date: 2017-06-28T22:30Z
  */
  //jshint ignore:line
-var Dragster = function (params) {
+/* eslint-env browser */
+
+// eslint-disable-next-line
+const Dragster = function (params = {}) {
     var PREFIX_CLASS_DRAGSTER = 'dragster-',
         CLASS_DRAGGING = 'is-dragging',
         CLASS_DRAGOVER = 'is-drag-over',
@@ -101,7 +104,7 @@ var Dragster = function (params) {
                  * @property left
                  * @type {Number}
                  */
-                left: 0
+                left: 0,
             },
             placeholder: {
                 /**
@@ -152,7 +155,6 @@ var Dragster = function (params) {
         draggedElement,
         draggableElements,
         regionEventHandlers,
-        isPlaceholderCallback,
         isDraggableCallback,
         isInDragOnlyRegionCallback,
         insertAfter,
@@ -181,10 +183,12 @@ var Dragster = function (params) {
 
     // merge the object with default config with an object with params provided by a developer
     for (key in params) {
-        if (params.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(params, 'key')) {
             finalParams[key] = params[key];
         }
     }
+
+    finalParams = { ...finalParams, ...params };
 
     /*
      * Find all draggable elements on the page
@@ -219,10 +223,10 @@ var Dragster = function (params) {
     wrapDraggableElements = function (elements) {
         if (finalParams.wrapDraggableElements === FALSE) {
             console.warn(
-              'You have disabled the default behavior of wrapping the draggable elements. ' +
-              'If you want Dragster.js to work properly you still will have to do this manually.\n' +
-              '\n' +
-              'More info: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean'
+                'You have disabled the default behavior of wrapping the draggable elements. ' +
+                    'If you want Dragster.js to work properly you still will have to do this manually.\n' +
+                    '\n' +
+                    'More info: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean',
             );
 
             return FALSE;
@@ -269,13 +273,18 @@ var Dragster = function (params) {
     getElement = function (element, callback) {
         var parent = element.parentNode;
 
-        if (!parent ||
+        if (
+            !parent ||
             (element.classList &&
                 element.classList.contains(CLASS_REGION) &&
                 !element.classList.contains(finalParams.dragOnlyRegionCssClass))
-            ) { return undefined; }
+        ) {
+            return undefined;
+        }
 
-        if (callback(element)) { return element; }
+        if (callback(element)) {
+            return element;
+        }
 
         return callback(parent) ? parent : getElement(parent, callback);
     };
@@ -339,7 +348,7 @@ var Dragster = function (params) {
      * @method cleanReplacables
      */
     cleanReplacables = function () {
-        ([].slice.call(document.getElementsByClassName(CLASS_REPLACABLE))).forEach(function (elem) {
+        [].slice.call(document.getElementsByClassName(CLASS_REPLACABLE)).forEach(function (elem) {
             elem.classList.remove(CLASS_REPLACABLE);
         });
     };
@@ -437,20 +446,11 @@ var Dragster = function (params) {
      */
     isDraggableCallback = function (element) {
         return (
-            (element.classList && element.classList.contains(CLASS_DRAGGABLE)) &&
+            element.classList &&
+            element.classList.contains(CLASS_DRAGGABLE) &&
             element.dataset.dragsterId === dragsterId
         );
     };
-
-    /*
-     * Test whether an element is a placeholder where a user can drop a dragged element
-     *
-     * @private
-     * @method isPlaceholderCallback
-     * @param element {HTMLElement}
-     * @return {Boolean}
-     */
-    isPlaceholderCallback = function (element) { return (element.classList && element.classList.contains(CLASS_PLACEHOLDER)); };
 
     /*
      * Test whether an element belongs to drag only region
@@ -460,13 +460,15 @@ var Dragster = function (params) {
      * @param element {HTMLElement}
      * @return {Boolean}
      */
-    isInDragOnlyRegionCallback = function (element) { return (element.classList && element.classList.contains(finalParams.dragOnlyRegionCssClass)); }; //jshint ignore:line
+    isInDragOnlyRegionCallback = function (element) {
+        return element.classList && element.classList.contains(finalParams.dragOnlyRegionCssClass);
+    }; //jshint ignore:line
 
     /*
      * Update the height of the regions dynamically
      *
      * @private
-     * @method isPlaceholderCallback
+     * @method updateRegionsHeight
      * @param element {HTMLElement}
      * @return {Boolean}
      */
@@ -485,7 +487,8 @@ var Dragster = function (params) {
                 elements.forEach(function (element) {
                     var styles = window.getComputedStyle(element);
 
-                    regionHeight += element.offsetHeight + parseInt(styles.marginTop, 10) + parseInt(styles.marginBottom, 10);
+                    regionHeight +=
+                        element.offsetHeight + parseInt(styles.marginTop, 10) + parseInt(styles.marginBottom, 10);
                 });
 
                 region.style.height = regionHeight + UNIT;
@@ -517,9 +520,11 @@ var Dragster = function (params) {
          * @param event {Object} event object
          */
         mousedown: function (event) {
-            if (finalParams.dragHandleCssClass &&
+            if (
+                finalParams.dragHandleCssClass &&
                 (typeof finalParams.dragHandleCssClass !== 'string' ||
-                !event.target.classList.contains(finalParams.dragHandleCssClass))) {
+                    !event.target.classList.contains(finalParams.dragHandleCssClass))
+            ) {
                 return FALSE;
             }
 
@@ -604,15 +609,18 @@ var Dragster = function (params) {
                 elementPositionX = eventObject.clientX + pageXOffset,
                 unknownTarget = document.elementFromPoint(eventObject.clientX, eventObject.clientY),
                 dropTarget = getElement(unknownTarget, isDraggableCallback),
-                top = finalParams.shadowElementUnderMouse ? eventObject.clientY + shadowElementPositionYDiff : eventObject.clientY,
-                left = finalParams.shadowElementUnderMouse ?
-                    elementPositionX + shadowElementPositionXDiff :
-                    elementPositionX - (shadowElementRegion.width / 2),
+                top = finalParams.shadowElementUnderMouse
+                    ? eventObject.clientY + shadowElementPositionYDiff
+                    : eventObject.clientY,
+                left = finalParams.shadowElementUnderMouse
+                    ? elementPositionX + shadowElementPositionXDiff
+                    : elementPositionX - shadowElementRegion.width / 2,
                 isDragNodeAvailable = dragsterEventInfo.drag.node && dragsterEventInfo.drag.node.dataset,
                 isInDragOnlyRegion = !!(dropTarget && getElement(dropTarget, isInDragOnlyRegionCallback)),
                 isAllowedTarget = unknownTarget.dataset.dragsterId === dragsterId,
                 isTargetRegion = unknownTarget.classList.contains(CLASS_REGION) && isAllowedTarget,
-                isTargetRegionDragOnly = unknownTarget.classList.contains(finalParams.dragOnlyRegionCssClass) && isAllowedTarget,
+                isTargetRegionDragOnly =
+                    unknownTarget.classList.contains(finalParams.dragOnlyRegionCssClass) && isAllowedTarget,
                 isTargetPlaceholder = unknownTarget.classList.contains(CLASS_PLACEHOLDER),
                 hasTargetDraggaBleElements = unknownTarget.getElementsByClassName(CLASS_DRAGGABLE).length > 0,
                 hasTargetPlaceholders = unknownTarget.getElementsByClassName(CLASS_PLACEHOLDER).length > 0;
@@ -631,10 +639,20 @@ var Dragster = function (params) {
             } else if (dropTarget && dropTarget !== draggedElement && !isInDragOnlyRegion) {
                 moveActions.removePlaceholders();
                 moveActions.addPlaceholderOnTarget(dropTarget, elementPositionY, pageYOffset);
-            } else if (isTargetRegion && !isTargetRegionDragOnly && !hasTargetDraggaBleElements && !hasTargetPlaceholders) {
+            } else if (
+                isTargetRegion &&
+                !isTargetRegionDragOnly &&
+                !hasTargetDraggaBleElements &&
+                !hasTargetPlaceholders
+            ) {
                 moveActions.removePlaceholders();
                 moveActions.addPlaceholderInRegion(unknownTarget);
-            } else if (isTargetRegion && !isTargetRegionDragOnly && hasTargetDraggaBleElements && !hasTargetPlaceholders) {
+            } else if (
+                isTargetRegion &&
+                !isTargetRegionDragOnly &&
+                hasTargetDraggaBleElements &&
+                !hasTargetPlaceholders
+            ) {
                 moveActions.removePlaceholders();
                 moveActions.addPlaceholderInRegionBelowTargets(unknownTarget);
             }
@@ -678,7 +696,7 @@ var Dragster = function (params) {
 
             findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER;
             dropTarget = document.getElementsByClassName(findByClass)[0];
-            isFromDragOnlyRegion = !!(draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback)),
+            isFromDragOnlyRegion = !!(draggedElement && getElement(draggedElement, isInDragOnlyRegionCallback));
             canBeCloned = finalParams.cloneElements && isFromDragOnlyRegion;
 
             hideShadowElementTimeout = setTimeout(resetDragsterWorkspace, 200);
@@ -715,7 +733,7 @@ var Dragster = function (params) {
             resetDragsterWorkspace(moveEvent, upEvent);
 
             finalParams.onAfterDragEnd(event);
-        }
+        },
     };
 
     moveActions = {
@@ -736,13 +754,16 @@ var Dragster = function (params) {
             cleanReplacables();
 
             if (!finalParams.replaceElements) {
-                if ((elementPositionY - pageYOffset - dropTargetRegion.top) < maxDistance && !visiblePlaceholder.top) {
+                if (elementPositionY - pageYOffset - dropTargetRegion.top < maxDistance && !visiblePlaceholder.top) {
                     removeElements(CLASS_PLACEHOLDER);
                     placeholder.dataset.placeholderPosition = POS_TOP;
                     insertBefore(dropTarget.firstChild, placeholder);
 
                     dragsterEventInfo.placeholder.position = POS_TOP;
-                } else if ((dropTargetRegion.bottom - (elementPositionY - pageYOffset)) < maxDistance && !visiblePlaceholder.bottom) {
+                } else if (
+                    dropTargetRegion.bottom - (elementPositionY - pageYOffset) < maxDistance &&
+                    !visiblePlaceholder.bottom
+                ) {
                     removeElements(CLASS_PLACEHOLDER);
                     placeholder.dataset.placeholderPosition = POS_BOTTOM;
                     dropTarget.appendChild(placeholder);
@@ -981,7 +1002,7 @@ var Dragster = function (params) {
             document.body.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
 
             window.removeEventListener('resize', discoverWindowHeight, false);
-        }
+        },
     };
 };
  //jshint ignore:line
