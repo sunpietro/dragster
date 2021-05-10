@@ -64,8 +64,12 @@ interface IDragsterEventInfo {
     dropped: {
         node: HTMLElement | null;
     };
-    clonedFrom: HTMLElement | null;
-    clonedTo: HTMLElement | null;
+    clonedFrom: {
+        node: HTMLElement | null;
+    };
+    clonedTo: {
+        node: HTMLElement | null;
+    };
 }
 declare type TDragsterEvent = MouseEvent & {
     dragster: IDragsterEventInfo;

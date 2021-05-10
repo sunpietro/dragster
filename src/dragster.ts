@@ -1,5 +1,3 @@
-/* eslint-env browser */
-
 const CLASS_DRAGGING = 'is-dragging';
 const CLASS_DRAGOVER = 'is-drag-over';
 const CLASS_DRAGGABLE = 'dragster-draggable';
@@ -71,8 +69,12 @@ interface IDragsterEventInfo {
     dropped: {
         node: HTMLElement | null;
     };
-    clonedFrom: HTMLElement | null;
-    clonedTo: HTMLElement | null;
+    clonedFrom: {
+        node: HTMLElement | null;
+    };
+    clonedTo: {
+        node: HTMLElement | null;
+    };
 }
 type TDragsterEvent = MouseEvent & { dragster: IDragsterEventInfo };
 type TDragster = (params: Partial<IDragsterParams>) => IDragsterOutput;
@@ -130,87 +132,20 @@ const Dragster: TDragster = ({
         bottom: false,
     };
     const defaultDragsterEventInfo: IDragsterEventInfo = {
-        drag: {
-            /**
-             * Contains drag node reference
-             *
-             * @property node
-             * @type {HTMLElement}
-             */
-            node: null,
-        },
-        drop: {
-            /**
-             * Contains drop node reference
-             *
-             * @property node
-             * @type {HTMLElement}
-             */
-            node: null,
-        },
+        drag: { node: null },
+        drop: { node: null },
         shadow: {
-            /**
-             * Contains shadow element node reference
-             *
-             * @property node
-             * @type {HTMLElement}
-             */
             node: null,
-            /**
-             * Contains top position value of shadow element
-             *
-             * @property top
-             * @type {Number}
-             */
             top: 0,
-            /**
-             * Contains left position value of shadow element
-             *
-             * @property left
-             * @type {Number}
-             */
             left: 0,
         },
         placeholder: {
-            /**
-             * Contains placeholder node reference
-             *
-             * @property node
-             * @type {HTMLElement}
-             */
             node: null,
-            /**
-             * Contains position type of placeholder
-             *
-             * @property position
-             * @type {String}
-             * @example 'top' or 'bottom'
-             */
             position: null,
         },
-        /**
-         * Reference to dropped element
-         *
-         * @property dropped
-         * @type {HTMLElement}
-         */
-        dropped: {
-            node: null,
-        },
-        /**
-         * Reference to cloned element
-         *
-         * @property clonedFrom
-         * @type {HTMLElement}
-         */
-        clonedFrom: null,
-        /**
-         * Reference to dropped cloned element
-         *
-         * @property clonedTo
-         * @type {HTMLElement}
-         */
-        clonedTo: null,
+        dropped: { node: null },
+        clonedFrom: { node: null },
+        clonedTo: { node: null },
     };
     const initDragsterEventInfo: TInitDragsterEventInfo = () => {
         let dragsterInfo = JSON.parse(
@@ -255,11 +190,6 @@ const Dragster: TDragster = ({
 
     /*
      * Wrap all elements from the `elements` param with a draggable wrapper
-     *
-     * @private
-     * @method findDraggableElements
-     * @param elements {Array}
-     * @return {Array}
      */
     const wrapDraggableElements = (elements: HTMLElement[]) => {
         if (!shouldWrapDraggableElements) {
@@ -395,9 +325,6 @@ const Dragster: TDragster = ({
 
     /*
      * Removes replacable classname from all replacable elements
-     *
-     * @private
-     * @method cleanReplacables
      */
     const cleanReplacables = () => {
         [...document.getElementsByClassName(CLASS_REPLACABLE)].forEach(
@@ -409,10 +336,6 @@ const Dragster: TDragster = ({
 
     /*
      * Creates a wrapper for a draggable element
-     *
-     * @private
-     * @method createElementWrapper
-     * @return {HTMLElement} DOM element
      */
     const createElementWrapper = () => {
         const wrapper = document.createElement(DIV);
@@ -453,11 +376,6 @@ const Dragster: TDragster = ({
 
     /*
      * Insert an element after a selected element
-     *
-     * @private
-     * @method insertAfter
-     * @param elementTarget {HTMLElement} dragged element
-     * @param elementAfter {HTMLElement} dragged element will be placed after this element
      */
     const insertAfter = (
         elementTarget: HTMLElement,
@@ -474,11 +392,6 @@ const Dragster: TDragster = ({
 
     /*
      * Insert an element before a selected element
-     *
-     * @private
-     * @method insertBefore
-     * @param elementTarget {HTMLElement} dragged element
-     * @param elementBefore {HTMLElement} dragged element will be placed before this element
      */
     const insertBefore = (
         elementTarget: HTMLElement,
@@ -493,11 +406,6 @@ const Dragster: TDragster = ({
 
     /*
      * Test whether an element is a draggable element
-     *
-     * @private
-     * @method isDraggableCallback
-     * @param element {HTMLElement}
-     * @return {Boolean}
      */
     const isDraggableCallback = (element: HTMLElement) => {
         return (
@@ -508,11 +416,6 @@ const Dragster: TDragster = ({
 
     /*
      * Test whether an element belongs to drag only region
-     *
-     * @private
-     * @method isInDragOnlyRegionCallback
-     * @param element {HTMLElement}
-     * @return {Boolean}
      */
     const isInDragOnlyRegionCallback = (element: HTMLElement) => {
         return element.classList.contains(dragOnlyRegionCssClass);
@@ -520,11 +423,6 @@ const Dragster: TDragster = ({
 
     /*
      * Update the height of the regions dynamically
-     *
-     * @private
-     * @method updateRegionsHeight
-     * @param element {HTMLElement}
-     * @return {Boolean}
      */
     const updateRegionsHeight = () => {
         if (shouldUpdateRegionsHeight) {
@@ -576,10 +474,6 @@ const Dragster: TDragster = ({
          * `mousedown` or `touchstart` event handler.
          * When user starts dragging an element the function adds a listener to either `mousemove` or `touchmove`
          * events. Creates a shadow element that follows a movement of the cursor.
-         *
-         * @private
-         * @method regionEventHandlers.mousedown
-         * @param event {Object} event object
          */
         mousedown: (event: TDragsterEvent) => {
             const isTouch = event.type === EVT_TOUCHSTART;
@@ -670,15 +564,9 @@ const Dragster: TDragster = ({
          * so a user is able to drop a dragged element onto the placeholder.
          * In case when in a region there's no draggable element it just adds a placeholder to the region.
          * Updates a position of shadow element following the cursor.
-         *
-         * @private
-         * @method regionEventHandlers.mousemove
-         * @param event {Object} event object
          */
         mousemove: (event: TDragsterEvent) => {
             event.dragster = updateDragsterEventInfo();
-
-            console.log('mousemove', event);
 
             if (onBeforeDragMove(event) === false || !shadowElementRegion) {
                 return false;
@@ -752,19 +640,12 @@ const Dragster: TDragster = ({
                 !isTargetRegion &&
                 !isTargetPlaceholder
             ) {
-                console.log(
-                    'remove',
-                    !isDragNodeAvailable,
-                    !isTargetRegion,
-                    !isTargetPlaceholder,
-                );
                 moveActions.removePlaceholders();
             } else if (
                 dropTarget &&
                 dropTarget !== draggedElement &&
                 !isInDragOnlyRegion
             ) {
-                console.log('add:target');
                 moveActions.removePlaceholders();
                 moveActions.addPlaceholderOnTarget(
                     dropTarget,
@@ -777,7 +658,6 @@ const Dragster: TDragster = ({
                 !hasTargetDraggaBleElements &&
                 !hasTargetPlaceholders
             ) {
-                console.log('add:region');
                 moveActions.removePlaceholders();
                 moveActions.addPlaceholderInRegion(unknownTarget);
             } else if (
@@ -804,10 +684,6 @@ const Dragster: TDragster = ({
          * Removes a listener to either `mousemove` or `touchmove` event.
          * Removes placeholders.
          * Removes a shadow element.
-         *
-         * @private
-         * @method regionEventHandlers.mouseup
-         * @param event {Object} event object
          */
         mouseup: (event: TDragsterEvent) => {
             event.dragster = updateDragsterEventInfo();
@@ -886,12 +762,6 @@ const Dragster: TDragster = ({
     const moveActions = {
         /**
          * Adds a new placeholder in relation to drop target
-         *
-         * @method moveActions.addPlaceholderOnTarget
-         * @private
-         * @param dropTarget {HTMLElement} a drop target element
-         * @param elementPositionY {Number} position Y of dragged element
-         * @param pageYOffset {Number} position of the scroll bar
          */
         addPlaceholderOnTarget: (
             dropTarget: HTMLElement,
@@ -964,10 +834,6 @@ const Dragster: TDragster = ({
 
         /**
          * Adds a new placeholder in an empty region
-         *
-         * @method moveActions.addPlaceholderInRegion
-         * @private
-         * @param regionTarget {HTMLElement} a region drop target
          */
         addPlaceholderInRegion: (regionTarget: HTMLElement) => {
             const placeholder = createPlaceholder();
@@ -987,10 +853,6 @@ const Dragster: TDragster = ({
 
         /**
          * Adds a new placeholder in an empty region
-         *
-         * @method moveActions.addPlaceholderInRegion
-         * @private
-         * @param regionTarget {HTMLElement} a region drop target
          */
         addPlaceholderInRegionBelowTargets: (regionTarget: HTMLElement) => {
             const elementsInRegion = [
@@ -1020,9 +882,6 @@ const Dragster: TDragster = ({
 
         /**
          * Removes all placeholders from regions
-         *
-         * @method moveActions.removePlaceholders
-         * @private
          */
         removePlaceholders: () => {
             if (!shouldReplaceElements) {
@@ -1127,8 +986,12 @@ const Dragster: TDragster = ({
             cleanWorkspace(dropTemp);
 
             return updateDragsterEventInfo({
-                clonedFrom: draggedElement,
-                clonedTo: dropTemp,
+                clonedFrom: {
+                    node: draggedElement,
+                },
+                clonedTo: {
+                    node: dropTemp,
+                },
             });
         },
     };
@@ -1137,9 +1000,6 @@ const Dragster: TDragster = ({
 
     /**
      * Adds event listeners to the regions
-     *
-     * @method addEventListenersToRegions
-     * @private
      */
     const addEventListenersToRegions = () => {
         // add `mousedown`/`touchstart` and `mouseup`/`touchend` event listeners to regions
