@@ -8,8 +8,8 @@
     "minify": "uglifyjs dragster.js --mangle --compress --comments --output dragster.min.js",
     "gzip": "gzip -c dragster.min.js > dragster.min.js.gz",
     "deploy": "yarn generate-modules && yarn minify && yarn gzip",
-    "test": "npx kill-port 8370; yarn serve & yarn run cypress open",
-    "serve": "yarn run http-server . -p 8370"
+    "test": "yarn serve & yarn run cypress open",
+    "serve": "npx kill-port 8370; yarn run http-server . -p 8370"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
     "husky": "^6.0.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
+    "typescript": "^4.2.4",
     "uglify-js": "^3.13.5"
   },
   "lint-staged": {
