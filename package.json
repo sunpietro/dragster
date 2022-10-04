@@ -31,11 +31,11 @@
     "cypress": "^7.2.0",
     "eslint": "^7.25.0",
     "eslint-plugin-cypress": "^2.11.2",
-    "http-server": "^0.12.3",
+    "http-server": "^14.1.1",
     "husky": "^6.0.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
-    "uglify-js": "^3.13.5"
+    "uglify-js": "^3.17.2"
   },
   "lint-staged": {
     "dragster-script.js": "yarn lint"
