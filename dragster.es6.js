@@ -10,12 +10,12 @@
  *
  * Date: 2017-06-28T22:30Z
  */
- //jshint ignore:line
+//jshint ignore:line
 /* eslint-env browser */
 
 // eslint-disable-next-line
 const Dragster = function (params = {}) {
-    var PREFIX_CLASS_DRAGSTER = 'dragster-',
+    let PREFIX_CLASS_DRAGSTER = 'dragster-',
         CLASS_DRAGGING = 'is-dragging',
         CLASS_DRAGOVER = 'is-drag-over',
         CLASS_DRAGGABLE = PREFIX_CLASS_DRAGSTER + 'draggable',
@@ -38,7 +38,7 @@ const Dragster = function (params = {}) {
         FALSE = false,
         TRUE = true,
         NULL = null,
-        dummyCallback = function () {},
+        dummyCallback = () => undefined,
         finalParams = {
             elementSelector: '.dragster-block',
             regionSelector: '.dragster-region',
@@ -1005,6 +1005,6 @@ const Dragster = function (params = {}) {
         },
     };
 };
- //jshint ignore:line
+//jshint ignore:line
 
 export default Dragster;
