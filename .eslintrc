@@ -10,7 +10,7 @@
         "ecmaVersion": 2018, // Allows for the parsing of modern ECMAScript features
         "sourceType": "module" // Allows for the use of imports
     },
-    "plugins": ["cypress"],
+    "plugins": ["cypress", "prettier"],
     "rules": {
         "eqeqeq": ["error", "always"],
         "indent": ["error", 4],
