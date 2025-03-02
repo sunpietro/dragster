@@ -48,17 +48,14 @@ const Dragster = function (params = {}) {
         POS_BOTTOM = 'bottom',
         UNIT = 'px',
         DIV = 'div',
-        FALSE = false,
-        TRUE = true,
-        NULL = null,
         dummyCallback = function () {},
         finalParams = {
             elementSelector: '.dragster-block',
             regionSelector: '.dragster-region',
-            dragHandleCssClass: FALSE,
+            dragHandleCssClass: false,
             dragOnlyRegionCssClass: PREFIX_CLASS_DRAGSTER + 'region--drag-only',
-            replaceElements: FALSE,
-            updateRegionsHeight: TRUE,
+            replaceElements: false,
+            updateRegionsHeight: true,
             minimumRegionHeight: 60,
             onBeforeDragStart: dummyCallback,
             onAfterDragStart: dummyCallback,
@@ -67,15 +64,15 @@ const Dragster = function (params = {}) {
             onBeforeDragEnd: dummyCallback,
             onAfterDragEnd: dummyCallback,
             onAfterDragDrop: dummyCallback,
-            scrollWindowOnDrag: FALSE,
-            dragOnlyRegionsEnabled: FALSE,
-            cloneElements: FALSE,
-            wrapDraggableElements: TRUE,
-            shadowElementUnderMouse: FALSE,
+            scrollWindowOnDrag: false,
+            dragOnlyRegionsEnabled: false,
+            cloneElements: false,
+            wrapDraggableElements: true,
+            shadowElementUnderMouse: false,
         },
         visiblePlaceholder = {
-            top: FALSE,
-            bottom: FALSE,
+            top: false,
+            bottom: false,
         },
         defaultDragsterEventInfo = {
             drag: {
@@ -85,7 +82,7 @@ const Dragster = function (params = {}) {
                  * @property node
                  * @type {HTMLElement}
                  */
-                node: NULL,
+                node: null,
             },
             drop: {
                 /**
@@ -94,7 +91,7 @@ const Dragster = function (params = {}) {
                  * @property node
                  * @type {HTMLElement}
                  */
-                node: NULL,
+                node: null,
             },
             shadow: {
                 /**
@@ -103,7 +100,7 @@ const Dragster = function (params = {}) {
                  * @property node
                  * @type {HTMLElement}
                  */
-                node: NULL,
+                node: null,
                 /**
                  * Contains top position value of shadow element
                  *
@@ -126,7 +123,7 @@ const Dragster = function (params = {}) {
                  * @property node
                  * @type {HTMLElement}
                  */
-                node: NULL,
+                node: null,
                 /**
                  * Contains position type of placeholder
                  *
@@ -134,7 +131,7 @@ const Dragster = function (params = {}) {
                  * @type {String}
                  * @example 'top' or 'bottom'
                  */
-                position: NULL,
+                position: null,
             },
             /**
              * Reference to dropped element
@@ -142,21 +139,21 @@ const Dragster = function (params = {}) {
              * @property dropped
              * @type {HTMLElement}
              */
-            dropped: NULL,
+            dropped: null,
             /**
              * Reference to cloned element
              *
              * @property clonedFrom
              * @type {HTMLElement}
              */
-            clonedFrom: NULL,
+            clonedFrom: null,
             /**
              * Reference to dropped cloned element
              *
              * @property clonedTo
              * @type {HTMLElement}
              */
-            clonedTo: NULL,
+            clonedTo: null,
         },
         dragsterEventInfo = {},
         key,
@@ -196,45 +193,45 @@ const Dragster = function (params = {}) {
 
     // merge the object with default config with an object with params provided by a developer
     for (key in params) {
-        if (Object.prototype.hasOwnProperty.call(params, 'key')) {
+        if (Object.prototype.hasOwnProperty.call(params, key)) {
             finalParams[key] = params[key];
         }
     }
 
     finalParams = { ...finalParams, ...params };
 
-    /*
+    /**
      * Find all draggable elements on the page
      *
      * @private
      * @method findDraggableElements
-     * @return {Array}
+     * @return {Array<HTMLElement>}
      */
     findDraggableElements = function () {
         return [].slice.call(document.querySelectorAll(finalParams.elementSelector));
     };
 
-    /*
-     * Find all regions elements on the page
+    /**
+     * Find all region elements on the page
      *
      * @private
      * @method findRegionElements
-     * @return {Array}
+     * @return {Array<HTMLElement>}
      */
     findRegionElements = function () {
         return [].slice.call(document.querySelectorAll(finalParams.regionSelector));
     };
 
-    /*
+    /**
      * Wrap all elements from the `elements` param with a draggable wrapper
      *
      * @private
-     * @method findDraggableElements
-     * @param elements {Array}
-     * @return {Array}
+     * @method wrapDraggableElements
+     * @param {Array<HTMLElement>} elements
+     * @return {boolean|undefined}
      */
     wrapDraggableElements = function (elements) {
-        if (finalParams.wrapDraggableElements === FALSE) {
+        if (finalParams.wrapDraggableElements === false) {
             console.warn(
                 'You have disabled the default behavior of wrapping the draggable elements. ' +
                     'If you want Dragster.js to work properly you still will have to do this manually.\n' +
@@ -242,7 +239,7 @@ const Dragster = function (params = {}) {
                     'More info: https://github.com/sunpietro/dragster/blob/master/README.md#user-content-wrapdraggableelements---boolean',
             );
 
-            return FALSE;
+            return false;
         }
 
         elements.forEach(function (draggableElement) {
@@ -250,7 +247,7 @@ const Dragster = function (params = {}) {
                 draggableParent = draggableElement.parentNode;
 
             if (draggableParent.classList.contains(CLASS_DRAGGABLE)) {
-                return FALSE;
+                return false;
             }
 
             draggableParent.insertBefore(wrapper, draggableElement);
@@ -271,17 +268,17 @@ const Dragster = function (params = {}) {
         document.body.appendChild(tempContainer);
     }
 
-    /*
+    /**
      * Check whether a given element meets the requirements from the callback.
-     * The callback should always return Boolean value - true or false.
-     * The function allows to find a correct element within the DOM.
+     * The callback should always return a boolean value - true or false.
+     * The function allows finding the correct element within the DOM.
      * If the element doesn't meet the requirements then the function tests its parent node.
      *
      * @private
      * @method getElement
-     * @param element {HTMLElement} DOM element
-     * @param callback {Function} testing function
-     * @return {HTMLElement}
+     * @param {HTMLElement} element - DOM element
+     * @param {Function} callback - testing function
+     * @return {HTMLElement|undefined}
      */
     getElement = function (element, callback) {
         var parent = element.parentNode;
@@ -302,12 +299,12 @@ const Dragster = function (params = {}) {
         return callback(parent) ? parent : getElement(parent, callback);
     };
 
-    /*
+    /**
      * Removes all elements defined by a selector from the DOM
      *
      * @private
      * @method removeElements
-     * @param element {HTMLElement} DOM element
+     * @param {string} selector - CSS selector
      */
     removeElements = function (selector) {
         var elements = [].slice.call(document.getElementsByClassName(selector));
@@ -320,14 +317,14 @@ const Dragster = function (params = {}) {
         });
     };
 
-    /*
+    /**
      * Removes all visible placeholders, shadow elements, empty draggable nodes
      * and removes `mousemove` event listeners from regions
      *
      * @private
      * @method cleanWorkspace
-     * @param element {HTMLElement} DOM element
-     * @param eventName {String} name of the event to stop listening to
+     * @param {HTMLElement} element - DOM element
+     * @param {string} eventName - name of the event to stop listening to
      */
     cleanWorkspace = function (element, eventName) {
         if (eventName) {
@@ -354,7 +351,7 @@ const Dragster = function (params = {}) {
         updateRegionsHeight();
     };
 
-    /*
+    /**
      * Removes replacable classname from all replacable elements
      *
      * @private
@@ -366,7 +363,7 @@ const Dragster = function (params = {}) {
         });
     };
 
-    /*
+    /**
      * Creates a wrapper for a draggable element
      *
      * @private
@@ -382,7 +379,7 @@ const Dragster = function (params = {}) {
         return wrapper;
     };
 
-    /*
+    /**
      * Creates a placeholder where dragged element can be dropped into
      *
      * @private
@@ -398,7 +395,7 @@ const Dragster = function (params = {}) {
         return placeholder;
     };
 
-    /*
+    /**
      * Creates a copy of dragged element that follows the cursor movement
      *
      * @private
@@ -419,29 +416,29 @@ const Dragster = function (params = {}) {
         return element;
     };
 
-    /*
+    /**
      * Insert an element after a selected element
      *
      * @private
      * @method insertAfter
-     * @param elementTarget {HTMLElement} dragged element
-     * @param elementAfter {HTMLElement} dragged element will be placed after this element
+     * @param {HTMLElement} elementTarget - dragged element
+     * @param {HTMLElement} elementAfter - dragged element will be placed after this element
      */
     insertAfter = function (elementTarget, elementAfter) {
         if (elementTarget && elementTarget.parentNode) {
-            var refChild = finalParams.wrapDraggableElements === FALSE ? elementTarget : elementTarget.nextSibling;
+            var refChild = finalParams.wrapDraggableElements === false ? elementTarget : elementTarget.nextSibling;
 
             elementTarget.parentNode.insertBefore(elementAfter, refChild);
         }
     };
 
-    /*
+    /**
      * Insert an element before a selected element
      *
      * @private
      * @method insertBefore
-     * @param elementTarget {HTMLElement} dragged element
-     * @param elementBefore {HTMLElement} dragged element will be placed before this element
+     * @param {HTMLElement} elementTarget - dragged element
+     * @param {HTMLElement} elementBefore - dragged element will be placed before this element
      */
     insertBefore = function (elementTarget, elementBefore) {
         if (elementTarget && elementTarget.parentNode) {
@@ -449,13 +446,13 @@ const Dragster = function (params = {}) {
         }
     };
 
-    /*
+    /**
      * Test whether an element is a draggable element
      *
      * @private
      * @method isDraggableCallback
-     * @param element {HTMLElement}
-     * @return {Boolean}
+     * @param {HTMLElement} element
+     * @return {boolean}
      */
     isDraggableCallback = function (element) {
         return (
@@ -465,25 +462,23 @@ const Dragster = function (params = {}) {
         );
     };
 
-    /*
+    /**
      * Test whether an element belongs to drag only region
      *
      * @private
      * @method isInDragOnlyRegionCallback
-     * @param element {HTMLElement}
-     * @return {Boolean}
+     * @param {HTMLElement} element
+     * @return {boolean}
      */
     isInDragOnlyRegionCallback = function (element) {
         return element.classList && element.classList.contains(finalParams.dragOnlyRegionCssClass);
-    }; //jshint ignore:line
+    };
 
-    /*
+    /**
      * Update the height of the regions dynamically
      *
      * @private
      * @method updateRegionsHeight
-     * @param element {HTMLElement}
-     * @return {Boolean}
      */
     updateRegionsHeight = function () {
         if (finalParams.updateRegionsHeight) {
@@ -514,12 +509,20 @@ const Dragster = function (params = {}) {
      *
      * @method resetDragsterWorkspace
      * @private
-     * @param moveEvent {String} move event name (either mousemove or touchmove)
-     * @param upEvent {String} up event name (either mouseup or touchend)
+     * @param {string} moveEvent - move event name (either mousemove or touchmove)
+     * @param {string} upEvent - up event name (either mouseup or touchend)
      */
     resetDragsterWorkspace = function (moveEvent, upEvent) {
         cleanWorkspace(draggedElement, moveEvent);
         cleanWorkspace(draggedElement, upEvent);
+    };
+
+    const addEventListeners = (element, events, handler) => {
+        events.forEach(event => element.addEventListener(event, handler, false));
+    };
+
+    const removeEventListeners = (element, events, handler) => {
+        events.forEach(event => element.removeEventListener(event, handler, false));
     };
 
     regionEventHandlers = {
@@ -538,7 +541,7 @@ const Dragster = function (params = {}) {
                 (typeof finalParams.dragHandleCssClass !== 'string' ||
                     !event.target.classList.contains(finalParams.dragHandleCssClass))
             ) {
-                return FALSE;
+                return false;
             }
 
             var targetRegion,
@@ -550,8 +553,8 @@ const Dragster = function (params = {}) {
             dragsterEventInfo = JSON.parse(JSON.stringify(defaultDragsterEventInfo));
             event.dragster = dragsterEventInfo;
 
-            if (finalParams.onBeforeDragStart(event) === FALSE || event.which === 3 /* detect right click */) {
-                return FALSE;
+            if (finalParams.onBeforeDragStart(event) === false || event.which === 3 /* detect right click */) {
+                return false;
             }
 
             event.preventDefault();
@@ -559,19 +562,19 @@ const Dragster = function (params = {}) {
             draggedElement = getElement(event.target, isDraggableCallback);
 
             if (!draggedElement) {
-                return FALSE;
+                return false;
             }
 
             moveEvent = isTouch ? EVT_TOUCHMOVE : EVT_MOUSEMOVE;
             upEvent = isTouch ? EVT_TOUCHEND : EVT_MOUSEUP;
 
             regions.forEach(function (region) {
-                region.addEventListener(moveEvent, regionEventHandlers.mousemove, FALSE);
-                region.addEventListener(upEvent, regionEventHandlers.mouseup, FALSE);
+                addEventListeners(region, [moveEvent, upEvent], regionEventHandlers.mousemove);
+                addEventListeners(region, [moveEvent, upEvent], regionEventHandlers.mouseup);
             });
 
-            document.body.addEventListener(moveEvent, regionEventHandlers.mousemove, FALSE);
-            document.body.addEventListener(upEvent, regionEventHandlers.mouseup, FALSE);
+            addEventListeners(document.body, [moveEvent, upEvent], regionEventHandlers.mousemove);
+            addEventListeners(document.body, [moveEvent, upEvent], regionEventHandlers.mouseup);
 
             targetRegion = draggedElement.getBoundingClientRect();
 
@@ -609,8 +612,8 @@ const Dragster = function (params = {}) {
         mousemove: function (event) {
             event.dragster = dragsterEventInfo;
 
-            if (finalParams.onBeforeDragMove(event) === FALSE || !shadowElementRegion) {
-                return FALSE;
+            if (finalParams.onBeforeDragMove(event) === false || !shadowElementRegion) {
+                return false;
             }
 
             event.preventDefault();
@@ -701,10 +704,10 @@ const Dragster = function (params = {}) {
                 isFromDragOnlyRegion,
                 canBeCloned;
 
-            if (finalParams.onBeforeDragEnd(event) === FALSE) {
+            if (finalParams.onBeforeDragEnd(event) === false) {
                 resetDragsterWorkspace(moveEvent, upEvent);
 
-                return FALSE;
+                return false;
             }
 
             findByClass = finalParams.replaceElements ? CLASS_REPLACABLE : CLASS_PLACEHOLDER;
@@ -719,7 +722,7 @@ const Dragster = function (params = {}) {
             if (!draggedElement || !dropTarget) {
                 resetDragsterWorkspace(moveEvent, upEvent);
 
-                return FALSE;
+                return false;
             }
 
             dropDraggableTarget = getElement(dropTarget, isDraggableCallback);
@@ -859,20 +862,20 @@ const Dragster = function (params = {}) {
          * @return {Object} updated event info
          */
         moveElement: function (dragsterEvent, dropTarget, dropDraggableTarget) {
-            var dropTemp = finalParams.wrapDraggableElements === FALSE ? draggedElement : createElementWrapper(),
+            var dropTemp = finalParams.wrapDraggableElements === false ? draggedElement : createElementWrapper(),
                 placeholderPosition = dropTarget.dataset.placeholderPosition;
 
             if (placeholderPosition === POS_TOP) {
                 insertBefore(dropDraggableTarget, dropTemp);
             } else {
-                if (finalParams.wrapDraggableElements === FALSE) {
+                if (finalParams.wrapDraggableElements === false) {
                     insertAfter(dropTemp, dropDraggableTarget);
                 } else {
                     insertAfter(dropDraggableTarget, dropTemp);
                 }
             }
 
-            if (draggedElement.firstChild && finalParams.wrapDraggableElements === TRUE) {
+            if (draggedElement.firstChild && finalParams.wrapDraggableElements === true) {
                 dropTemp.appendChild(draggedElement.firstChild);
             }
 
@@ -937,7 +940,7 @@ const Dragster = function (params = {}) {
      *
      * @method scrollWindow
      * @private
-     * @param event {Object} event object
+     * @param {Object} event - event object
      */
     scrollWindow = function (event) {
         var eventObject = event.changedTouches ? event.changedTouches[0] : event,
@@ -974,8 +977,8 @@ const Dragster = function (params = {}) {
             region.classList.add(CLASS_REGION);
             region.dataset.dragsterId = dragsterId;
 
-            region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
-            region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
+            region.addEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, false);
+            region.addEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, false);
         });
     };
 
@@ -1000,19 +1003,19 @@ const Dragster = function (params = {}) {
             regions.forEach(function (region) {
                 region.classList.remove(CLASS_REGION);
 
-                region.removeEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, FALSE);
-                region.removeEventListener(EVT_MOUSEMOVE, regionEventHandlers.mousemove, FALSE);
-                region.removeEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
+                region.removeEventListener(EVT_MOUSEDOWN, regionEventHandlers.mousedown, false);
+                region.removeEventListener(EVT_MOUSEMOVE, regionEventHandlers.mousemove, false);
+                region.removeEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, false);
 
-                region.removeEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, FALSE);
-                region.removeEventListener(EVT_TOUCHMOVE, regionEventHandlers.mousemove, FALSE);
-                region.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
+                region.removeEventListener(EVT_TOUCHSTART, regionEventHandlers.mousedown, false);
+                region.removeEventListener(EVT_TOUCHMOVE, regionEventHandlers.mousemove, false);
+                region.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, false);
             });
 
-            document.body.removeEventListener(EVT_MOUSEMOVE, regionEventHandlers.mousemove, FALSE);
-            document.body.removeEventListener(EVT_TOUCHMOVE, regionEventHandlers.mousemove, FALSE);
-            document.body.removeEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, FALSE);
-            document.body.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, FALSE);
+            document.body.removeEventListener(EVT_MOUSEMOVE, regionEventHandlers.mousemove, false);
+            document.body.removeEventListener(EVT_TOUCHMOVE, regionEventHandlers.mousemove, false);
+            document.body.removeEventListener(EVT_MOUSEUP, regionEventHandlers.mouseup, false);
+            document.body.removeEventListener(EVT_TOUCHEND, regionEventHandlers.mouseup, false);
 
             window.removeEventListener('resize', discoverWindowHeight, false);
         },
