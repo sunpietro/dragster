@@ -1,0 +1,14 @@
+#!/bin/sh
+
+COMMIT_MSG=$(cat "$1")
+
+if printf '%s' "$COMMIT_MSG" | grep -qiE "^(breaking change:|major:)"; then
+    BUMP="major"
+elif printf '%s' "$COMMIT_MSG" | grep -qiE "^fix:"; then
+    BUMP="patch"
+else
+    BUMP="minor"
+fi
+
+node scripts/bump-version.js "$BUMP"
+git add package.json
