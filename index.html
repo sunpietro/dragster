@@ -190,32 +190,29 @@
                 <div class="dragster-block">9.2</div>
             </div>
         </div>
-        <script src="dragster-script.js"></script>
-        <script>
-            (function () {
-                const d0 = Dragster({
-                    cloneElements: true,
-                    regionSelector: '#container-0 > .dragster-region',
-                    elementSelector: '#container-0 > .dragster-region > .dragster-block',
-                });
+        <script type="module">
+            import Dragster from './dist/dragster.js';
 
-                const d1 = Dragster({
-                    regionSelector: '#container-1 > .dragster-region',
-                    elementSelector: '#container-1 > .dragster-region > .dragster-block',
-                });
+            new Dragster({
+                regionSelector: '#container-0 > .dragster-region',
+                elementSelector: '#container-0 > .dragster-region > .dragster-block',
+                dragOnlyRegionCssClass: 'dragster-region--drag-only',
+            });
 
-                const d2 = Dragster({
-                    cloneElements: false,
-                    regionSelector: '#container-2 > .dragster-region',
-                    elementSelector: '#container-2 > .dragster-region > .dragster-block',
-                });
+            new Dragster({
+                regionSelector: '#container-1 > .dragster-region',
+                elementSelector: '#container-1 > .dragster-region > .dragster-block',
+            });
 
-                const d3 = Dragster({
-                    replaceElements: true,
-                    regionSelector: '#container-3 > .dragster-region',
-                    elementSelector: '#container-3 > .dragster-region > .dragster-block',
-                });
-            })();
+            new Dragster({
+                regionSelector: '#container-2 > .dragster-region',
+                elementSelector: '#container-2 > .dragster-region > .dragster-block',
+            });
+
+            // container-3 demonstrates `replaceElements` mode in legacy 2.x.
+            // That mode is being reintroduced in a follow-up PR before 3.0.0
+            // ships; the static markup is kept here so the demo's HTML diff
+            // stays small when the wiring lands.
         </script>
     </body>
 </html>

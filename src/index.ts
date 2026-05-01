@@ -193,8 +193,16 @@ export default class Dragster {
     private handleMove(info: DragsterEventInfo, point: { clientX: number; clientY: number }): void {
         if (!info.drag.node) return;
 
-        const target = document.elementFromPoint(point.clientX, point.clientY);
-        const pointerTarget = target instanceof HTMLElement ? target : null;
+        // `elementFromPoint` can return SVG / MathML / generic Element (e.g.
+        // when the cursor sits on top of a `<use>` or `<path>` inside one of
+        // the user's `.dragster-block`s). Walk up to the nearest HTMLElement
+        // so placeholder/region predicates — which assume `dataset` and the
+        // HTML class API — get a valid target.
+        let current: Element | null = document.elementFromPoint(point.clientX, point.clientY);
+        while (current && !(current instanceof HTMLElement)) {
+            current = current.parentElement;
+        }
+        const pointerTarget = current;
 
         const result = this.placeholderManager.update({
             pointerTarget,
