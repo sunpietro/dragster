@@ -108,7 +108,7 @@
             The elements from the last region will be copied when dropping on any droppable region.
         </p>
         <div class="regions" id="container-0">
-            <div class="dragster-region">
+            <div class="dragster-region" data-testid="source-region">
                 <div class="dragster-block" data-testid="drag-target">1.1</div>
                 <div class="dragster-block">
                     <h3>Dragster Block 1.2</h3>
@@ -197,7 +197,6 @@
                     cloneElements: true,
                     regionSelector: '#container-0 > .dragster-region',
                     elementSelector: '#container-0 > .dragster-region > .dragster-block',
-                    dragOnlyRegionsEnabled: true,
                 });
 
                 const d1 = Dragster({

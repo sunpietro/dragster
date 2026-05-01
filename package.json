@@ -29,6 +29,7 @@
   "devDependencies": {
     "@testing-library/cypress": "^8.0.3",
     "cypress": "^10.10.0",
+    "cypress-mcp": "^0.1.1",
     "eslint": "^8.25.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-prettier": "^4.2.1",

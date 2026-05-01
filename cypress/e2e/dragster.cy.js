@@ -51,6 +51,27 @@ describe('Dragster.js', () => {
         });
     });
 
+    it('maintains source region height while dragging an element to another region', () => {
+        let initialHeight;
+
+        cy.findByTestId('source-region')
+            .then(($region) => {
+                initialHeight = $region[0].offsetHeight;
+            });
+
+        cy.findByTestId('drag-target').then(($draggable) => {
+            cy.wrap($draggable).trigger('mousedown');
+            cy.wrap($draggable).trigger('mousemove', 300, 10, { force: true });
+
+            cy.findByTestId('source-region')
+                .then(($region) => {
+                    expect($region[0].offsetHeight).to.be.gte(initialHeight);
+                });
+
+            cy.wrap($draggable).trigger('mouseup');
+        });
+    });
+
     it('replaces elements on drop', () => {
         const draggableSelector = 'Dragster Block 8.2';
         const droppableSelector = 'Dragster Block 9.1';

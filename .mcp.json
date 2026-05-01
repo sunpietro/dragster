@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cypress": {
+      "command": "node",
+      "args": ["node_modules/.bin/cypress-mcp"]
+    }
+  }
+}
