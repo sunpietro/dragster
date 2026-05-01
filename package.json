@@ -53,6 +53,9 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "cypress"
-    ]
+    ],
+    "overrides": {
+      "uuid": "^14.0.0"
+    }
   }
 }
