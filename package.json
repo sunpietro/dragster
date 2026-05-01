@@ -7,7 +7,7 @@
     "generate-modules": "node module-generator.js",
     "minify": "uglifyjs dragster.js --mangle --compress --comments --output dragster.min.js",
     "gzip": "gzip -c dragster.min.js > dragster.min.js.gz",
-    "deploy": "yarn generate-modules && yarn minify && yarn gzip",
+    "release": "yarn generate-modules && yarn minify && yarn gzip",
     "test": "npx kill-port 8370; yarn serve & yarn run cypress open",
     "serve": "yarn run http-server . -p 8370"
   },
