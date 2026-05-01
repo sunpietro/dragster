@@ -67,6 +67,14 @@ export interface StateMachineConfig {
     /** Typed event bus the state machine emits lifecycle events on. */
     emitter: EventEmitter<DragsterEventMap>;
     /**
+     * Synchronous hook run on every pointer-move tick, between the shadow
+     * reposition and the `afterDragMove` emission. Receives the current
+     * event info plus the live cursor coordinates (which are not exposed
+     * via the public event payload). This is the seam the orchestrator uses
+     * to update the placeholder and trigger viewport auto-scroll.
+     */
+    onMove?: (info: DragsterEventInfo, point: { clientX: number; clientY: number }) => void;
+    /**
      * Synchronous hook run at pointer-up, between `beforeDragEnd` and
      * `afterDragDrop`/`afterDragEnd`. The seam where PR 7 wires in the
      * actual reorder. See {@link DropResult} for the return contract.
@@ -94,7 +102,14 @@ export interface StateMachineConfig {
  */
 export class StateMachine {
     private state: DragState = 'idle';
-    private regions: readonly HTMLElement[];
+    /**
+     * Defensive copy of the regions we have pointer-down listeners on. Owning
+     * a private array (instead of holding the caller's reference) keeps detach
+     * correct when the caller mutates their own array in place — e.g., when
+     * `RegionTracker.refresh()` rewrites its regions list and the orchestrator
+     * passes the *same* reference back into `rebindRegions()`.
+     */
+    private regions: HTMLElement[];
     private readonly config: StateMachineConfig;
     private shadowElement: HTMLElement | null = null;
     private draggedElement: HTMLElement | null = null;
@@ -110,7 +125,7 @@ export class StateMachine {
 
     constructor(config: StateMachineConfig) {
         this.config = config;
-        this.regions = config.regions;
+        this.regions = [...config.regions];
         this.bound = {
             pointerDown: (event) => this.onPointerDown(event as MouseEvent | TouchEvent),
             pointerMove: (event) => this.onPointerMove(event as MouseEvent | TouchEvent),
@@ -149,7 +164,7 @@ export class StateMachine {
      */
     rebindRegions(regions: readonly HTMLElement[]): void {
         this.detachPointerDownListeners(this.regions);
-        this.regions = regions;
+        this.regions = [...regions];
         this.attachPointerDownListeners(this.regions);
     }
 
@@ -255,6 +270,8 @@ export class StateMachine {
         this.eventInfo.shadow.top = top;
         this.eventInfo.shadow.left = left;
 
+        this.config.onMove?.(this.eventInfo, point);
+
         this.config.emitter.emit('afterDragMove', this.eventInfo);
     }
 
@@ -317,6 +334,10 @@ export class StateMachine {
                 position: 'fixed',
                 width: `${rect.width}px`,
                 height: `${rect.height}px`,
+                // Keep the shadow transparent to hit-testing so the orchestrator's
+                // `document.elementFromPoint(cursor)` returns whatever sits under
+                // the cursor, never the shadow itself.
+                pointerEvents: 'none',
             },
         });
         // Intentional innerHTML copy — preserves React's node references on the

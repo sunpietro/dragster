@@ -48,7 +48,6 @@ function createItem(parent: HTMLElement, rect: Partial<DOMRect> = {}): HTMLEleme
 function makeManager(region: HTMLElement, overrides: Partial<PlaceholderManagerConfig> = {}): PlaceholderManager {
     return new PlaceholderManager({
         instanceId: 'inst-1',
-        elementSelector: `.${ITEM_CLASS}`,
         isDraggable: (el) => el.classList.contains(ITEM_CLASS),
         isOwnedRegion: (el) => el.classList.contains(REGION_CLASS),
         isDragOnlyRegion: (el) => el.classList.contains(DRAG_ONLY_CLASS),

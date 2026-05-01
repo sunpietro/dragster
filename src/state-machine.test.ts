@@ -325,6 +325,42 @@ describe('StateMachine — move', () => {
         fireMouse(document.body, 'mousemove');
         expect(before).not.toHaveBeenCalled();
     });
+
+    it('invokes onMove hook with eventInfo and live cursor coordinates between shadow update and afterDragMove', () => {
+        const onMove = vi.fn();
+        const { draggable, emitter } = setup({ onMove });
+        const order: string[] = [];
+        emitter.on('afterDragMove', () => {
+            order.push('afterDragMove');
+        });
+        onMove.mockImplementation(() => {
+            order.push('onMove');
+        });
+        fireMouse(draggable, 'mousedown');
+        onMove.mockClear();
+        order.length = 0;
+
+        fireMouse(document.body, 'mousemove', { clientX: 200, clientY: 300 });
+
+        expect(onMove).toHaveBeenCalledTimes(1);
+        const [info, point] = onMove.mock.calls[0]!;
+        expect(info.drag.node).toBe(draggable);
+        expect(point).toEqual({ clientX: 200, clientY: 300 });
+        // onMove fires before afterDragMove so listeners see updates the hook made.
+        expect(order).toEqual(['onMove', 'afterDragMove']);
+    });
+
+    it('skips onMove when beforeDragMove cancels the move', () => {
+        const onMove = vi.fn();
+        const { draggable, emitter } = setup({ onMove });
+        fireMouse(draggable, 'mousedown');
+        onMove.mockClear();
+
+        emitter.on('beforeDragMove', () => false);
+        fireMouse(document.body, 'mousemove');
+
+        expect(onMove).not.toHaveBeenCalled();
+    });
 });
 
 describe('StateMachine — drop', () => {

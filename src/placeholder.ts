@@ -32,8 +32,6 @@ export interface PlaceholderState {
 export interface PlaceholderManagerConfig {
     /** Per-instance id stamped on placeholders so cross-instance cleanup is safe. */
     instanceId: string;
-    /** CSS selector matching draggable user content within a region (used to detect empty vs. populated regions). */
-    elementSelector: string;
     /** Predicate identifying a draggable element (typically: wrapper class + matching instanceId). */
     isDraggable: (element: HTMLElement) => boolean;
     /** Predicate matching a region this manager's owning instance manages. */
