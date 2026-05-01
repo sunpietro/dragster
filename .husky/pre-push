@@ -1,1 +1,1 @@
-yarn lint && yarn test:headless
+pnpm lint && pnpm test:headless
