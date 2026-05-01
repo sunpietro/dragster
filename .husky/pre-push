@@ -1,1 +1,1 @@
-pnpm lint && pnpm test:headless
+pnpm typecheck && pnpm lint && pnpm test:unit

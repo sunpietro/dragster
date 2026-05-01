@@ -1,13 +1,43 @@
 #!/bin/sh
 
-COMMIT_MSG=$(cat "$1")
+COMMIT_MSG_FILE="$1"
+FIRST_LINE=$(head -1 "$COMMIT_MSG_FILE")
 
-if printf '%s' "$COMMIT_MSG" | grep -qiE "^(breaking change:|major:)"; then
+# --- Validation: conventional commits format (always, on every branch) ---
+# https://www.conventionalcommits.org/
+#   <type>[optional scope]!?: <description>
+#   types: feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert
+TYPE_PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^)]+\))?!?: .+'
+if ! printf '%s' "$FIRST_LINE" | grep -qE "$TYPE_PATTERN"; then
+    {
+        echo "ERROR: commit message does not follow Conventional Commits."
+        echo
+        echo "  Expected: <type>[optional scope]!?: <description>"
+        echo "  Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+        echo "  Use ! after the type/scope to mark a breaking change."
+        echo "  See https://www.conventionalcommits.org/"
+        echo
+        echo "  Got: $FIRST_LINE"
+    } >&2
+    exit 1
+fi
+
+# --- Auto version bump (master branch only) ---
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" != "master" ]; then
+    exit 0
+fi
+
+# Detect breaking change: `<type>!:` in subject OR `BREAKING CHANGE:` in body
+if printf '%s' "$FIRST_LINE" | grep -qE '^[a-z]+(\([^)]+\))?!:' || grep -qE '^BREAKING CHANGE:' "$COMMIT_MSG_FILE"; then
     BUMP="major"
-elif printf '%s' "$COMMIT_MSG" | grep -qiE "^fix:"; then
+elif printf '%s' "$FIRST_LINE" | grep -qE '^feat(\([^)]+\))?:'; then
+    BUMP="minor"
+elif printf '%s' "$FIRST_LINE" | grep -qE '^fix(\([^)]+\))?:'; then
     BUMP="patch"
 else
-    BUMP="minor"
+    # docs/style/refactor/perf/test/build/ci/chore/revert -> no bump
+    exit 0
 fi
 
 node scripts/bump-version.js "$BUMP"
