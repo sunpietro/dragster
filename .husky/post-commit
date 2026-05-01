@@ -1,0 +1,5 @@
+#!/bin/sh
+
+VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
+git tag "v$VERSION"
+echo "Tagged commit as v$VERSION"

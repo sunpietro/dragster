@@ -1,6 +1,6 @@
 {
   "name": "dragsterjs",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Tiny vanilla JS plugin that enables drag'n'drop interactions to a user of your website",
   "main": "dragster.js",
   "types": "dragster.d.ts",
@@ -51,6 +51,8 @@
     "*.js": "pnpm lint"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["cypress"]
+    "onlyBuiltDependencies": [
+      "cypress"
+    ]
   }
 }
