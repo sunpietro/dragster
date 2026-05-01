@@ -1,5 +1,3 @@
-/* eslint-env browser */
-
 // eslint-disable-next-line
 const Dragster = function (params = {}) {
     var PREFIX_CLASS_DRAGSTER = 'dragster-',
@@ -132,7 +130,6 @@ const Dragster = function (params = {}) {
             clonedTo: null,
         },
         dragsterEventInfo = {},
-        key,
         regions,
         getElement,
         shadowElement,

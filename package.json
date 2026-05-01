@@ -8,6 +8,8 @@
     "generate-modules": "node module-generator.js",
     "minify": "uglifyjs dragster.js --mangle --compress --comments --output dragster.min.js",
     "gzip": "gzip -c dragster.min.js > dragster.min.js.gz",
+    "lint": "eslint .",
+    "prepare": "husky",
     "release": "yarn test:headless && yarn generate-modules && yarn minify && yarn gzip",
     "test": "npx kill-port 8370; yarn serve & yarn run cypress open",
     "test:headless": "npx kill-port 8370; node_modules/.bin/http-server . -p 8370 & npx wait-on http://127.0.0.1:8370 && yarn cypress run; npx kill-port 8370",
@@ -29,25 +31,22 @@
   },
   "homepage": "https://github.com/sunpietro/dragster",
   "devDependencies": {
-    "@testing-library/cypress": "^8.0.3",
-    "cypress": "^10.10.0",
+    "@eslint/js": "^10.0.1",
+    "@testing-library/cypress": "^10.0.0",
+    "cypress": "^15.0.0",
     "cypress-mcp": "^0.1.1",
-    "eslint": "^8.25.0",
-    "eslint-plugin-cypress": "^2.12.1",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-cypress": "^6.0.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.5.0",
     "http-server": "^14.1.1",
-    "husky": "^6.0.0",
-    "lint-staged": "^10.5.4",
-    "prettier": "^2.7.1",
-    "uglify-js": "^3.17.3"
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "uglify-js": "^3.19.3"
   },
   "lint-staged": {
-    "dragster-script.js": "yarn lint"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "yarn lint dragster-script.js && yarn test"
-    }
+    "*.js": "yarn lint"
   }
 }

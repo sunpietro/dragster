@@ -10,10 +10,8 @@
  *
  * Date: 2017-06-28T22:30Z
  */
- //jshint ignore:line
-/* eslint-env browser */
+//jshint ignore:line
 
-// eslint-disable-next-line
 const Dragster = function (params = {}) {
     var PREFIX_CLASS_DRAGSTER = 'dragster-',
         CLASS_DRAGGING = 'is-dragging',
@@ -145,7 +143,6 @@ const Dragster = function (params = {}) {
             clonedTo: null,
         },
         dragsterEventInfo = {},
-        key,
         regions,
         getElement,
         shadowElement,
@@ -1003,6 +1000,6 @@ const Dragster = function (params = {}) {
         },
     };
 };
- //jshint ignore:line
+//jshint ignore:line
 
 export default Dragster;
