@@ -1,5 +1,5 @@
 /*@preserve
- * Dragster - drag'n'drop library v1.6.2
+ * Dragster - drag'n'drop library v2.0.0
  * https://github.com/sunpietro/dragster
  *
  * Copyright 2015-2017 Piotr Nalepa
@@ -11,19 +11,6 @@
  * Date: 2017-06-28T22:30Z
  */
  //jshint ignore:line
-;(function (root, moduleName, factory) {
-    'use strict';
-
-    if (typeof define === 'function' && define.amd) {
-        define(moduleName, factory);
-    } else if (typeof exports === 'object') {
-        exports = module.exports = factory();
-    } else {
-        root[moduleName] = factory();
-    }
-})(this, 'Dragster', function () {
-    'use strict';
-
 /* eslint-env browser */
 
 // eslint-disable-next-line
@@ -1016,7 +1003,6 @@ const Dragster = function (params = {}) {
         },
     };
 };
+ //jshint ignore:line
 
-
-    return Dragster;
-});
+export default Dragster;

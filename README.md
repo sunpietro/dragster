@@ -11,8 +11,24 @@ It works both on desktop (using mouse interface) and mobile devices (using touch
 
 See the library in action at the demo page: [Dragster.js demo page](http://sunpietro.github.io/dragster/)
 
+## Migrating to v2.0.0
+
+**v2.0.0 is a breaking change.** The UMD/CommonJS build has been dropped. The library is now distributed as an ES6 module only.
+
+If you are using `require('dragsterjs')` or importing via AMD/RequireJS, you will need to migrate:
+
+```javascript
+// Before (v1.x — CommonJS, no longer works)
+const Dragster = require('dragsterjs');
+
+// After (v2.x — ES6 module)
+import Dragster from 'dragsterjs';
+```
+
+Browser support is **last 3 versions** of major browsers.
+
 ## How to install?
-You can install this library in two different ways:
+You can install this library in several ways:
 * Clone this repository on Github,
 * Install using npm (Node.js dependencies manager) with following command:
 
@@ -20,11 +36,6 @@ You can install this library in two different ways:
     npm install dragsterjs
     ```
 
-* Install using bower (frontend dependencies manager) with following command:
-
-    ```
-    bower install dragsterjs
-    ```
 * Install using Yarn:
     
     ```
@@ -45,7 +56,7 @@ To start having fun with dragging elements on the website prepare the following 
 Then add following JS code:
 
 ```javascript
-var dragster = new window.Dragster({
+var dragster = window.Dragster({
     elementSelector: '.dragster-block',
     regionSelector: '.dragster-region'
 });
@@ -55,7 +66,7 @@ If you would like to use DragsterJS as ES6 module in the browser:
 
 ```html
 <script type="module">
-    import Dragster from './dragster.es6.js';
+    import Dragster from './dragster.js';
     const dragster = Dragster();
 </script>
 ```
@@ -90,7 +101,7 @@ If you need to further customize the look and feel of the elements being dragged
 If you want to replace elements instead of moving them between regions you can initialize Dragster.js library with an option `replaceElements: true`:
 
 ```javascript
-var dragster = new window.Dragster({
+var dragster = window.Dragster({
     elementSelector: '.dragster-block',
     regionSelector: '.dragster-region',
     replaceElements: true
@@ -101,7 +112,7 @@ var dragster = new window.Dragster({
 If you don't want to update regions height value when dragging and dropping element on a region you can initialize Dragster.js library with an option `updateRegionsHeight: false`:
 
 ```javascript
-var dragster = new window.Dragster({
+var dragster = window.Dragster({
     elementSelector: '.dragster-block',
     regionSelector: '.dragster-region',
     updateRegionsHeight: false
@@ -112,7 +123,7 @@ var dragster = new window.Dragster({
 If you have an app where elements are added dynamically, you can update the draggable elements list on demand:
 
 ```javascript
-var dragster = new window.Dragster({
+var dragster = window.Dragster({
     elementSelector: '.dragster-block',
     regionSelector: '.dragster-region'
 });
@@ -124,7 +135,7 @@ dragster.update();
 Imagine you have a shopping cart with a list of products. You want to allow dropping multiple items into the shopping cart without removing an item from the list of available shop items.
 
 ```javascript
-var dragster = new window.Dragster({
+var dragster = window.Dragster({
     elementSelector: '.dragster-block',
     regionSelector: '.dragster-region',
     dragOnlyRegionCssClass: 'dragster-region--drag-only',
@@ -135,16 +146,17 @@ var dragster = new window.Dragster({
 ## Properties
 List of properties:
 ### elementSelector (required) - {String}
-It is a CSS selector to find all the elements on the page that should be draggable. Default value: `'.dragster-block'`
+CSS selector for all elements that should be draggable. Default value: `'.dragster-block'`
 ### regionSelector (required) - {String}
-It is a CSS selector to find all the regions where elements can be dragged onto and where all the drag'n'drop functionality works as expected.
-Default value: `'.dragster-region'`
-### replaceOnDrop - {Boolean}
-Indidator stating if dropped element should switch position with drop target.
+CSS selector for all regions where drag'n'drop is active. Default value: `'.dragster-region'`
+### dragHandleCssClass - {String|Boolean}
+When set to a CSS class name, drag only initiates if the mousedown target has that class. Useful for implementing drag handles (e.g. a grip icon inside a card). Default value: `false` (entire element is draggable).
+### replaceElements - {Boolean}
+Indicator stating if dropped element should switch position with drop target.
 It takes either `true` or `false` value. Default value: `false`.
-### copyOnDrop - {Boolean}
-Indicator stating if dropped element should be copied into a new position.
-It takes either `true` or `false` value. Default value: `false`.
+### cloneElements - {Boolean}
+Indicator stating if dropped element should be cloned into the new position (original stays in place).
+Requires `dragOnlyRegionCssClass` to be applied in the HTML markup. It takes either `true` or `false` value. Default value: `false`.
 ### updateRegionsHeight - {Boolean}
 It is indicator whether regions should update their height according to the number of elements visible in the region.
 It takes either `true` or `false` value. Default value: `true`.
@@ -154,8 +166,6 @@ Tell the dragster to not to resize the regions below provided value. Default val
 Tell the dragster to scroll window while dragging an element. Default value: `false`.
 ### dragOnlyRegionCssClass - {String}
 The drag-only region CSS class name. Used to identify regions. Default value: `'dragster-region--drag-only'`.
-### cloneElements - {Boolean}
-The flag stating the elements can be cloned from region to region. Requires `dragOnlyRegionCssClass` to be applied in the HTML markup of a page. Default value: `false`.
 ### wrapDraggableElements - {Boolean}
 By default all draggable elements are wrapped in a wrapper `<div>`, by settings this variable to `false` this behavior can be disabled. This can sometimes be useful when using the script in frameworks like Angular or such.
 
@@ -168,29 +178,42 @@ By default the shadow element is placed on half of its width, by setting this va
 
 ## Properties - callbacks
 These properties allow a developer to control the behaviour of dragster.js library using callbacks.
-All the callbacks takes **one param - the event object**, provided by Dragster.js library.
-When callback returns `false` value then the dragging action is cancelled.
-Be careful with these callbacks as it might cause unexpected behaviour of dragged elements.
+All callbacks receive **one param — a Dragster event object** with the following shape:
+
+```javascript
+{
+    drag: { node },        // the element being dragged
+    drop: { node },        // the element being dropped onto
+    shadow: { node, top, left }, // the shadow (ghost) element and its position
+    placeholder: { node, position }, // the drop placeholder ('top' or 'bottom')
+    dropped: node,         // reference to the dropped element (post-drop callbacks)
+    clonedFrom: node,      // source element when cloning
+    clonedTo: node         // cloned element placed in the target region
+}
+```
+
+Returning `false` from `onBeforeDragStart`, `onBeforeDragMove`, or `onBeforeDragEnd` cancels the action.
+
 ### onBeforeDragStart - {Function}
-Before drag start callback. Can prevent from dragging an element.
+Called before drag starts. Return `false` to prevent the drag.
 ### onAfterDragStart - {Function}
-After drag start callback.
+Called after drag starts.
 ### onBeforeDragMove - {Function}
-Before drag move callback. Can prevent from dropping an element.
+Called before each drag move. Return `false` to prevent the drop.
 ### onAfterDragMove - {Function}
-After drag move callback.
+Called after each drag move.
 ### onBeforeDragEnd - {Function}
-Before drag end callback. Can prevent from dropping an element.
+Called before drag ends. Return `false` to prevent the drop.
 ### onAfterDragEnd - {Function}
-After drag end callback.
+Called after drag ends.
 ### onAfterDragDrop - {Function}
-After drop callback.
+Called after an element is dropped.
 
 ## Methods
 List of methods ready to be used by any webdeveloper:
 ### update
-Updates a reference to draggable elements. For example, when user adds a new element to any of droppable regions then running `update` method makes a new element draggable as well.
+Re-scans the DOM for draggable elements matching `elementSelector`. Call this after dynamically adding new elements to a region so they become draggable.
 ### updateRegions
-Updates regions references and attaches event listeners to them
+Re-scans the DOM for regions matching `regionSelector` and re-attaches event listeners. Call this after dynamically adding new regions to the page.
 ### destroy
-Removes all event listeners related to DragsterJS
+Removes all event listeners added by DragsterJS. Call this when tearing down the component to prevent memory leaks.

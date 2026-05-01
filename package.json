@@ -1,14 +1,16 @@
 {
   "name": "dragsterjs",
-  "version": "1.6.2",
+  "version": "2.0.0",
   "description": "Tiny vanilla JS plugin that enables drag'n'drop interactions to a user of your website",
   "main": "dragster.js",
+  "types": "dragster.d.ts",
   "scripts": {
     "generate-modules": "node module-generator.js",
     "minify": "uglifyjs dragster.js --mangle --compress --comments --output dragster.min.js",
     "gzip": "gzip -c dragster.min.js > dragster.min.js.gz",
-    "release": "yarn generate-modules && yarn minify && yarn gzip",
+    "release": "yarn test:headless && yarn generate-modules && yarn minify && yarn gzip",
     "test": "npx kill-port 8370; yarn serve & yarn run cypress open",
+    "test:headless": "npx kill-port 8370; node_modules/.bin/http-server . -p 8370 & npx wait-on http://127.0.0.1:8370 && yarn cypress run; npx kill-port 8370",
     "serve": "yarn run http-server . -p 8370"
   },
   "repository": {
