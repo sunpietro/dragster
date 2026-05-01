@@ -1,29 +1,58 @@
-const js = require('@eslint/js');
-const cypress = require('eslint-plugin-cypress');
-const prettierRecommended = require('eslint-plugin-prettier/recommended');
-const globals = require('globals');
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
 
-module.exports = [
-    { ignores: ['node_modules/', 'dragster.min.js', 'dragster.min.js.gz', 'template.es6.js'] },
-    js.configs.recommended,
-    cypress.configs.recommended,
+export default tseslint.config(
     {
+        ignores: [
+            'node_modules/',
+            'dist/',
+            'coverage/',
+            'playwright-report/',
+            'test-results/',
+            // Legacy 2.x files — deleted in PR 9
+            'dragster-script.js',
+            'dragster.js',
+            'dragster.min.js',
+            'dragster.min.js.gz',
+            'dragster-comment.js',
+            'template.es6.js',
+            'module-generator.js',
+            'cypress.config.js',
+            'cypress/',
+        ],
+    },
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
+    {
+        files: ['src/**/*.ts', 'tests/**/*.ts'],
         languageOptions: {
-            ecmaVersion: 2018,
-            sourceType: 'module',
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname,
+            },
             globals: {
                 ...globals.browser,
+            },
+        },
+    },
+    {
+        files: ['**/*.config.{js,ts,mjs}', 'scripts/**/*.{js,mjs}'],
+        languageOptions: {
+            globals: {
                 ...globals.node,
             },
         },
+    },
+    {
         rules: {
             eqeqeq: ['error', 'always'],
             'no-cond-assign': ['error', 'always'],
             'no-console': 'off',
-            'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-            'cypress/no-assigning-return-values': 'off',
-            'cypress/no-async-tests': 'off',
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
         },
     },
     prettierRecommended,
-];
+);

@@ -1,5 +1,17 @@
 #!/bin/sh
 
+# Auto-tag releases only on master
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" != "master" ]; then
+    exit 0
+fi
+
 VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
+
+# Skip if tag already exists (commit didn't bump the version, e.g., chore/docs)
+if git rev-parse --verify --quiet "refs/tags/v$VERSION" >/dev/null; then
+    exit 0
+fi
+
 git tag "v$VERSION"
 echo "Tagged commit as v$VERSION"
